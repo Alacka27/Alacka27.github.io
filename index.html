@@ -304,6 +304,55 @@ footer {
 }
 footer .mono { font-family: var(--mono); font-size: 12px; }
 
+/* ── форма заказа ── */
+.order-box {
+  display: grid; gap: 22px;
+  grid-template-columns: 1fr 1fr;
+  background: var(--card);
+  border: 1px solid var(--stroke);
+  border-radius: var(--radius);
+  padding: 24px;
+}
+@media (max-width: 860px) { .order-box { grid-template-columns: 1fr; } }
+.ob-col { display: flex; flex-direction: column; }
+.ob-label {
+  font-family: var(--mono); font-size: 11px; letter-spacing: .16em;
+  text-transform: uppercase; color: var(--dim); margin-bottom: 12px;
+}
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+.chip-pick {
+  font-family: var(--font); font-size: 13px;
+  padding: 8px 14px; border-radius: 10px;
+  border: 1px solid var(--stroke); background: #0e1420; color: var(--text);
+  cursor: pointer; transition: border-color .15s, background .15s, color .15s;
+}
+.chip-pick:hover { border-color: var(--stroke-hi); }
+.chip-pick.on {
+  color: #04121a; font-weight: 600; border-color: transparent;
+  background: linear-gradient(100deg, var(--accent), var(--accent-2));
+}
+.field { margin-bottom: 14px; }
+.field label { display: block; font-size: 12.5px; color: var(--dim); margin-bottom: 6px; }
+.field textarea, .field input {
+  width: 100%; font-family: var(--font); font-size: 14.5px;
+  background: #0a0e16; color: var(--text);
+  border: 1px solid var(--stroke); border-radius: 10px;
+  padding: 10px 12px; outline: none;
+}
+.field textarea { resize: vertical; min-height: 92px; }
+.field textarea:focus, .field input:focus { border-color: var(--stroke-hi); }
+.row2 { display: grid; gap: 12px; grid-template-columns: 1fr 1fr; }
+@media (max-width: 520px) { .row2 { grid-template-columns: 1fr; } }
+
+#ordPreview {
+  flex: 1; min-height: 210px; margin: 0 0 16px;
+  font-family: var(--mono); font-size: 12.5px; line-height: 1.65;
+  white-space: pre-wrap; overflow: auto;
+  background: #0a0e16; border: 1px solid var(--stroke);
+  border-radius: 12px; padding: 16px; color: var(--text);
+}
+.ob-hint { margin: 14px 0 0; font-size: 12.5px; color: var(--dim); }
+
 /* всплывающая подсказка «скопировано» */
 #toast {
   position: fixed; left: 50%; bottom: 30px;
@@ -344,6 +393,7 @@ footer .mono { font-family: var(--mono); font-size: 12px; }
     <nav class="nav-links">
       <a href="#services">услуги</a>
       <a href="#works">работы</a>
+      <a href="#order">заявка</a>
       <a href="#how">как работаем</a>
       <a href="#contact">связаться</a>
     </nav>
@@ -373,7 +423,7 @@ footer .mono { font-family: var(--mono); font-size: 12px; }
     </div>
 
     <div class="cta">
-      <a class="btn btn-main" href="#contact">Обсудить заказ →</a>
+      <a class="btn btn-main" href="#order">Оставить заявку →</a>
       <a class="btn btn-ghost" href="#works">Посмотреть работы</a>
     </div>
   </section>
@@ -519,6 +569,61 @@ footer .mono { font-family: var(--mono); font-size: 12px; }
     </div>
   </section>
 
+  <!-- ═══════════ ЗАКАЗ ═══════════ -->
+  <section id="order" class="wrap">
+    <div class="sec-head reveal">
+      <p class="sec-kicker">заявка</p>
+      <h2>Расскажи, что нужно</h2>
+      <p class="sec-sub">
+        Выбери услугу и опиши задачу своими словами — я соберу из этого готовое сообщение.
+        Отправишь его мне в Telegram одним нажатием, и я сразу скажу цену и срок.
+      </p>
+    </div>
+
+    <div class="order-box reveal">
+      <div class="ob-col">
+        <div class="ob-label">Что нужно сделать</div>
+        <div class="chips" id="ordServices">
+          <button class="chip-pick" type="button" data-svc="постройка или локация">🏗️ постройка</button>
+          <button class="chip-pick" type="button" data-svc="GUI и интерфейс">🖥️ GUI</button>
+          <button class="chip-pick" type="button" data-svc="скрипт на Luau">⚙️ скрипт</button>
+          <button class="chip-pick" type="button" data-svc="анимация">🎬 анимация</button>
+          <button class="chip-pick" type="button" data-svc="прототип под ключ">🚀 прототип</button>
+          <button class="chip-pick" type="button" data-svc="доработка проекта">🔧 доработка</button>
+        </div>
+
+        <div class="field">
+          <label for="ordWhat">Опиши задачу</label>
+          <textarea id="ordWhat" placeholder="например: нужен магазин скинов, покупка за монеты, сохранение между сессиями, адаптив под телефон"></textarea>
+        </div>
+
+        <div class="row2">
+          <div class="field">
+            <label for="ordDeadline">Когда нужно</label>
+            <input id="ordDeadline" type="date">
+          </div>
+          <div class="field">
+            <label for="ordBudget">Бюджет, ₽ <span style="color:#8595ad">(если знаешь)</span></label>
+            <input id="ordBudget" type="number" min="0" step="100" placeholder="2000">
+          </div>
+        </div>
+      </div>
+
+      <div class="ob-col">
+        <div class="ob-label">Что получится отправить</div>
+        <pre id="ordPreview">выбери услугу и опиши задачу — текст появится здесь</pre>
+        <div class="cta">
+          <button class="btn btn-main" id="ordSend" type="button">Открыть Telegram →</button>
+          <button class="btn btn-ghost" id="ordCopy" type="button">Скопировать текст</button>
+        </div>
+        <p class="ob-hint">
+          Telegram не умеет открывать чат с готовым текстом, поэтому порядок такой:
+          нажми «Скопировать текст» → потом «Открыть Telegram» → вставь сообщение в чат.
+        </p>
+      </div>
+    </div>
+  </section>
+
   <!-- ═══════════ КОНТАКТЫ ═══════════ -->
   <section id="contact" class="wrap">
     <div class="sec-head reveal">
@@ -531,21 +636,19 @@ footer .mono { font-family: var(--mono); font-size: 12px; }
     </div>
 
     <div class="contacts">
-      <!-- ЗАМЕНИ username на свой реальный ник в Telegram -->
-      <a class="contact reveal" href="https://t.me/CHANGE_ME" target="_blank" rel="noopener">
+      <a class="contact reveal" href="https://t.me/alacka27" target="_blank" rel="noopener">
         <span class="ico">✈️</span>
         <span>
           <span class="who">Telegram</span>
-          <span class="val">@CHANGE_ME</span>
+          <span class="val">@alacka27</span>
         </span>
       </a>
 
-      <!-- ЗАМЕНИ на свой Discord -->
-      <div class="contact reveal" data-copy="CHANGE_ME">
+      <div class="contact reveal" data-copy="alacka27">
         <span class="ico">🎮</span>
         <span>
           <span class="who">Discord (клик — скопировать)</span>
-          <span class="val">CHANGE_ME</span>
+          <span class="val">alacka27</span>
         </span>
       </div>
 
@@ -618,6 +721,76 @@ footer .mono { font-family: var(--mono); font-size: 12px; }
         showToast(text);
       }
     });
+  });
+
+  /* ── форма заказа ──
+     Собирает из ответов готовое сообщение. Telegram не поддерживает ссылку
+     с заранее заполненным текстом, поэтому сначала копируем текст, а потом
+     открываем чат — остаётся только вставить. */
+  var TG = 'https://t.me/alacka27';
+  var picked = [];
+  var chips = document.querySelectorAll('.chip-pick');
+  var prev = document.getElementById('ordPreview');
+  var ordWhat = document.getElementById('ordWhat');
+  var ordDeadline = document.getElementById('ordDeadline');
+  var ordBudget = document.getElementById('ordBudget');
+
+  chips.forEach(function (chip) {
+    chip.addEventListener('click', function () {
+      chip.classList.toggle('on');
+      var svc = chip.getAttribute('data-svc');
+      picked = [];
+      document.querySelectorAll('.chip-pick.on').forEach(function (c) {
+        picked.push(c.getAttribute('data-svc'));
+      });
+      renderOrder();
+    });
+  });
+
+  function renderOrder() {
+    var what = (ordWhat.value || '').trim();
+    var dl = ordDeadline.value;
+    var budget = ordBudget.value;
+
+    if (!picked.length && !what) {
+      prev.textContent = 'выбери услугу и опиши задачу — текст появится здесь';
+      return;
+    }
+
+    var lines = ['Привет! Нужна помощь с Roblox.'];
+    if (picked.length) lines.push('Что нужно: ' + picked.join(', ') + '.');
+    if (what) lines.push('Детали: ' + what);
+    if (dl) lines.push('Срок: до ' + dl + '.');
+    if (budget) lines.push('Бюджет: ' + Number(budget).toLocaleString('ru-RU') + ' ₽.');
+    lines.push('');
+    lines.push('Напиши, сколько это будет стоить и когда сможешь сделать.');
+    prev.textContent = lines.join('\n');
+  }
+
+  ordWhat.addEventListener('input', renderOrder);
+  ordDeadline.addEventListener('change', renderOrder);
+  ordBudget.addEventListener('input', renderOrder);
+
+  function copyText(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { showToast('текст скопирован — вставь в Telegram'); },
+        function () { showToast('выдели текст и скопируй вручную'); }
+      );
+    } else { showToast('выдели текст и скопируй вручную'); }
+  }
+
+  document.getElementById('ordCopy').addEventListener('click', function () {
+    copyText(prev.textContent);
+  });
+
+  document.getElementById('ordSend').addEventListener('click', function () {
+    if (!picked.length && !(ordWhat.value || '').trim()) {
+      showToast('сначала выбери услугу или опиши задачу');
+      return;
+    }
+    copyText(prev.textContent);
+    setTimeout(function () { window.open(TG, '_blank', 'noopener'); }, 350);
   });
 
   /* ── фон: медленно плывущие точки и связи между ними ──
