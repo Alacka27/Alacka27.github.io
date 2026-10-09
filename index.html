@@ -580,13 +580,28 @@ footer .mono { font-family: var(--mono); font-size: 12px; }
       <div class="ob-col">
         <div class="ob-label">Что получится отправить</div>
         <pre id="ordPreview">выбери услугу и опиши задачу — текст появится здесь</pre>
-        <div class="cta">
-          <button class="btn btn-main" id="ordSend" type="button">Открыть Telegram →</button>
-          <button class="btn btn-ghost" id="ordCopy" type="button">Скопировать текст</button>
+
+        <div class="field">
+          <label for="ordContact">Как с тобой связаться <span style="color:#8595ad">(ник в Telegram или Discord)</span></label>
+          <input id="ordContact" placeholder="например: @nickname" autocomplete="off">
         </div>
-        <p class="ob-hint">
-          Telegram не умеет открывать чат с готовым текстом, поэтому порядок такой:
-          нажми «Скопировать текст» → потом «Открыть Telegram» → вставь сообщение в чат.
+
+        <!-- ловушка для ботов: человек этого поля не видит и не заполняет -->
+        <input type="text" id="ordTrap" name="ordTrap" tabindex="-1" autocomplete="off"
+               aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
+
+        <div class="cta">
+          <button class="btn btn-main" id="ordMail" type="button">Отправить по почте</button>
+          <button class="btn btn-ghost" id="ordDiscord" type="button">Отправить в Discord</button>
+        </div>
+        <div class="cta" style="margin-top:10px">
+          <button class="btn btn-ghost" id="ordCopy" type="button">Скопировать текст</button>
+          <a class="btn btn-ghost" id="ordTg" href="https://t.me/alacka27" target="_blank" rel="noopener">Написать в Telegram</a>
+        </div>
+
+        <p class="ob-hint" id="ordStatus">
+          Заполни описание — текст соберётся сам. Дальше выбирай, как удобнее отправить:
+          по почте или в Discord, либо просто напиши мне в Telegram.
         </p>
       </div>
     </div>
@@ -691,22 +706,41 @@ footer .mono { font-family: var(--mono); font-size: 12px; }
     });
   });
 
-  /* ── форма заказа ──
-     Собирает из ответов готовое сообщение. Telegram не поддерживает ссылку
-     с заранее заполненным текстом, поэтому сначала копируем текст, а потом
-     открываем чат — остаётся только вставить. */
-  var TG = 'https://t.me/alacka27';
+  /* ══════════════════════════════════════════════════════════════
+     ЗАЯВКА: два способа отправки + запасной.
+
+     1. Почта — открывает почтовое приложение клиента с готовым письмом.
+        Ничего настраивать не нужно, ничего не утекает.
+     2. Discord — форма отправляет заявку в твой приватный канал через
+        вебхук. Адрес вебхука виден в исходнике страницы, поэтому канал
+        держи отдельным и неважным: если начнётся флуд — удали вебхук
+        и вставь новый адрес ниже.
+     3. Кнопка «скопировать» и прямая ссылка на Telegram — на случай,
+        если у клиента ничего не открылось.
+     ══════════════════════════════════════════════════════════════ */
+  var ORDER_MAIL = 'ЗАМЕНИ_НА_СВОЮ_ПОЧТУ@example.com';   // ← сюда впиши свою почту
+  var ORDER_WEBHOOK = '';                                  // ← сюда вставь адрес Discord-вебхука
+
   var picked = [];
   var chips = document.querySelectorAll('.chip-pick');
   var prev = document.getElementById('ordPreview');
   var ordWhat = document.getElementById('ordWhat');
   var ordDeadline = document.getElementById('ordDeadline');
   var ordBudget = document.getElementById('ordBudget');
+  var ordContact = document.getElementById('ordContact');
+  var ordTrap = document.getElementById('ordTrap');
+  var ordStatus = document.getElementById('ordStatus');
+
+  function setStatus(text, kind) {
+    ordStatus.textContent = text;
+    ordStatus.style.color = kind === 'bad' ? '#ff6b81'
+                         : kind === 'good' ? '#7dffb0'
+                         : '';
+  }
 
   chips.forEach(function (chip) {
     chip.addEventListener('click', function () {
       chip.classList.toggle('on');
-      var svc = chip.getAttribute('data-svc');
       picked = [];
       document.querySelectorAll('.chip-pick.on').forEach(function (c) {
         picked.push(c.getAttribute('data-svc'));
@@ -715,50 +749,114 @@ footer .mono { font-family: var(--mono); font-size: 12px; }
     });
   });
 
-  function renderOrder() {
+  function collect() {
     var what = (ordWhat.value || '').trim();
-    var dl = ordDeadline.value;
-    var budget = ordBudget.value;
-
-    if (!picked.length && !what) {
-      prev.textContent = 'выбери услугу и опиши задачу — текст появится здесь';
-      return;
-    }
-
     var lines = ['Привет! Нужна помощь с Roblox.'];
     if (picked.length) lines.push('Что нужно: ' + picked.join(', ') + '.');
     if (what) lines.push('Детали: ' + what);
-    if (dl) lines.push('Срок: до ' + dl + '.');
-    if (budget) lines.push('Бюджет: ' + Number(budget).toLocaleString('ru-RU') + ' ₽.');
+    if (ordDeadline.value) lines.push('Срок: до ' + ordDeadline.value + '.');
+    if (ordBudget.value) lines.push('Бюджет: ' + Number(ordBudget.value).toLocaleString('ru-RU') + ' ₽.');
+    var contact = (ordContact.value || '').trim();
+    if (contact) lines.push('Связаться со мной: ' + contact);
     lines.push('');
     lines.push('Напиши, сколько это будет стоить и когда сможешь сделать.');
-    prev.textContent = lines.join('\n');
+    return lines.join('\n');
   }
+
+  function renderOrder() {
+    if (!picked.length && !(ordWhat.value || '').trim()) {
+      prev.textContent = 'выбери услугу и опиши задачу — текст появится здесь';
+      return;
+    }
+    prev.textContent = collect();
+  }
+
+  /* — форма заполнена? бот-ловушка пуста? — */
+  function ready() {
+    if (ordTrap.value) return false;                       // сработала ловушка для ботов
+    if (!picked.length && !(ordWhat.value || '').trim()) {
+      setStatus('Сначала выбери услугу или опиши задачу, что нужно сделать.', 'bad');
+      return false;
+    }
+    return true;
+  }
+
+  function remember() {
+    try { localStorage.setItem('alacka.lastOrder', String(Date.now())); } catch (e) {}
+  }
+  function tooSoon() {
+    try {
+      var last = Number(localStorage.getItem('alacka.lastOrder') || 0);
+      return last && (Date.now() - last) < 60000;
+    } catch (e) { return false; }
+  }
+
+  /* ── 1. отправка по почте ── */
+  document.getElementById('ordMail').addEventListener('click', function () {
+    if (!ready()) return;
+    if (ORDER_MAIL.indexOf('@example.com') > 0) {
+      setStatus('Почта для заявок ещё не настроена — напиши мне в Telegram, кнопка ниже.', 'bad');
+      return;
+    }
+    var subject = 'Заявка с сайта: ' + (picked.join(', ') || 'Roblox');
+    var link = 'mailto:' + ORDER_MAIL +
+      '?subject=' + encodeURIComponent(subject) +
+      '&body=' + encodeURIComponent(collect());
+    setStatus('Открываю почтовое приложение — отправь письмо, и я отвечу.', 'good');
+    window.location.href = link;
+  });
+
+  /* ── 2. отправка в Discord через вебхук ── */
+  document.getElementById('ordDiscord').addEventListener('click', function () {
+    if (!ready()) return;
+    if (!ORDER_WEBHOOK) {
+      setStatus('Приём в Discord ещё не настроен — напиши мне в Telegram или отправь по почте.', 'bad');
+      return;
+    }
+    if (tooSoon()) {
+      setStatus('Ты только что отправлял заявку. Если нужно ещё — напиши прямо в Telegram.', 'bad');
+      return;
+    }
+
+    var text = collect();
+    setStatus('Отправляю…');
+    this.disabled = true;
+    var btn = this;
+
+    fetch(ORDER_WEBHOOK, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: 'Заявка с сайта Alacka',
+        content: text.slice(0, 1900)
+      })
+    }).then(function (res) {
+      btn.disabled = false;
+      if (res.ok || res.status === 204) {
+        remember();
+        setStatus('Заявка отправлена! Я увижу её в Discord и отвечу. Если хочешь быстрее — продублируй в Telegram.', 'good');
+      } else {
+        setStatus('Discord не принял заявку (ошибка ' + res.status + '). Напиши мне в Telegram — кнопка ниже.', 'bad');
+      }
+    }).catch(function () {
+      btn.disabled = false;
+      setStatus('Не получилось отправить — похоже, сеть блокирует. Скопируй текст кнопкой ниже и пришли в Telegram.', 'bad');
+    });
+  });
 
   ordWhat.addEventListener('input', renderOrder);
   ordDeadline.addEventListener('change', renderOrder);
   ordBudget.addEventListener('input', renderOrder);
 
-  function copyText(text) {
+  /* ── 3. запасные варианты ── */
+  document.getElementById('ordCopy').addEventListener('click', function () {
+    var text = prev.textContent;
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(text).then(
-        function () { showToast('текст скопирован — вставь в Telegram'); },
+        function () { showToast('текст скопирован'); },
         function () { showToast('выдели текст и скопируй вручную'); }
       );
     } else { showToast('выдели текст и скопируй вручную'); }
-  }
-
-  document.getElementById('ordCopy').addEventListener('click', function () {
-    copyText(prev.textContent);
-  });
-
-  document.getElementById('ordSend').addEventListener('click', function () {
-    if (!picked.length && !(ordWhat.value || '').trim()) {
-      showToast('сначала выбери услугу или опиши задачу');
-      return;
-    }
-    copyText(prev.textContent);
-    setTimeout(function () { window.open(TG, '_blank', 'noopener'); }, 350);
   });
 
   /* ── фон: медленно плывущие точки и связи между ними ──
