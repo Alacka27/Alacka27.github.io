@@ -353,6 +353,25 @@ footer .mono { font-family: var(--mono); font-size: 12px; }
 }
 .ob-hint { margin: 14px 0 0; font-size: 12.5px; color: var(--dim); }
 
+/* объявление о загрузке: «занят» или «приём закрыт» */
+.notice {
+  margin-bottom: 18px; padding: 14px 20px;
+  border-radius: var(--radius); font-size: 14.5px;
+  border: 1px solid rgba(255,184,79,.45);
+  background: rgba(255,184,79,.08);
+  color: #ffd79b;
+}
+.notice.closed {
+  border-color: rgba(255,107,129,.45);
+  background: rgba(255,107,129,.08);
+  color: #ffb3bf;
+}
+.notice b { color: #fff; }
+.badge.busy { color: var(--warn); border-color: rgba(255,184,79,.45); background: rgba(255,184,79,.08); }
+.badge.busy .dot { background: var(--warn); box-shadow: 0 0 10px var(--warn); }
+.badge.closed { color: var(--bad); border-color: rgba(255,107,129,.45); background: rgba(255,107,129,.08); }
+.badge.closed .dot { background: var(--bad); box-shadow: 0 0 10px var(--bad); animation: none; }
+
 /* всплывающая подсказка «скопировано» */
 #toast {
   position: fixed; left: 50%; bottom: 30px;
@@ -404,7 +423,7 @@ footer .mono { font-family: var(--mono); font-size: 12px; }
 
   <!-- ═══════════ ПЕРВЫЙ ЭКРАН ═══════════ -->
   <section class="hero wrap">
-    <div class="badge"><span class="dot"></span> свободен для заказов</div>
+    <div class="badge" id="statusBadge"><span class="dot"></span> <span id="statusText">свободен для заказов</span></div>
 
     <h1>Строю, скриптлю и делаю<br>интерфейсы для <span class="grad">Roblox</span></h1>
 
@@ -551,7 +570,9 @@ footer .mono { font-family: var(--mono); font-size: 12px; }
       </p>
     </div>
 
-    <div class="order-box reveal">
+    <div class="notice" id="orderNotice" hidden></div>
+
+    <div class="order-box reveal" id="orderForm">
       <div class="ob-col">
         <div class="ob-label">Что нужно сделать</div>
         <div class="chips" id="ordServices">
@@ -603,6 +624,15 @@ footer .mono { font-family: var(--mono); font-size: 12px; }
           Заполни описание — текст соберётся сам. Дальше выбирай, как удобнее отправить:
           по почте или в Discord, либо просто напиши мне в Telegram.
         </p>
+      </div>
+    </div>
+
+    <!-- показывается, только когда приём заказов закрыт -->
+    <div class="notice closed" id="orderClosed" style="display:none">
+      <b>Форма заявок сейчас закрыта.</b> Напиши прямо в Telegram — если задача срочная,
+      обсудим отдельно, возможно найду окно.
+      <div style="margin-top:12px">
+        <a class="btn btn-main" href="https://t.me/alacka27" target="_blank" rel="noopener">Написать в Telegram</a>
       </div>
     </div>
   </section>
@@ -706,8 +736,62 @@ footer .mono { font-family: var(--mono); font-size: 12px; }
     });
   });
 
-  /* ══════════════════════════════════════════════════════════════
-     ЗАЯВКА: два способа отправки + запасной.
+  /* ── статус загрузки ──
+     Читается из файла status.json в репозитории. Меняешь файл (сам на GitHub
+     или через admin.html) — сайт у всех посетителей сразу показывает новый
+     статус. Три положения: open / busy / closed. */
+  var STATUS = {
+    open:   { text: 'свободен для заказов', cls: '' },
+    busy:   { text: 'занят · беру в очередь', cls: 'busy' },
+    closed: { text: 'приём заказов закрыт', cls: 'closed' }
+  };
+
+  function applyStatus(data) {
+    var key = (data && data.status && STATUS[data.status]) ? data.status : 'open';
+    var info = STATUS[key];
+    var note = (data && data.note) ? String(data.note).trim() : '';
+
+    var badge = document.getElementById('statusBadge');
+    var badgeText = document.getElementById('statusText');
+    if (badge && badgeText) {
+      badgeText.textContent = info.text;
+      badge.className = 'badge' + (info.cls ? ' ' + info.cls : '');
+    }
+
+    var notice = document.getElementById('orderNotice');
+    var form = document.getElementById('orderForm');
+    var closedBox = document.getElementById('orderClosed');
+
+    if (notice) {
+      if (key === 'busy') {
+        notice.hidden = false;
+        notice.className = 'notice';
+        notice.innerHTML = '<b>Сейчас у меня загруз:</b> ' +
+          (note || 'беру новые заказы в очередь — сроки сдвигаются.') +
+          ' Можешь оставить заявку, но отвечу с задержкой.';
+      } else if (key === 'closed') {
+        notice.hidden = false;
+        notice.className = 'notice closed';
+        notice.innerHTML = '<b>Приём заказов временно закрыт.</b> ' +
+          (note || 'Возобновлю, как только освобожусь.') +
+          ' Если задача срочная — напиши в Telegram, обсудим.';
+      } else {
+        notice.hidden = true;
+      }
+    }
+
+    /* при закрытом приёме форму убираем, оставляем только Telegram */
+    if (form) form.style.display = (key === 'closed') ? 'none' : '';
+    if (closedBox) closedBox.style.display = (key === 'closed') ? '' : 'none';
+  }
+
+  fetch('status.json?t=' + Date.now(), { cache: 'no-store' })
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (data) { if (data) applyStatus(data); })
+    .catch(function () { /* файла нет или нет сети — оставляем статус по умолчанию */ });
+
+  /* ── форма заказа ──
+     Три способа отправить заявку:
 
      1. Почта — открывает почтовое приложение клиента с готовым письмом.
         Ничего настраивать не нужно, ничего не утекает.
@@ -723,7 +807,6 @@ footer .mono { font-family: var(--mono); font-size: 12px; }
      сразу несколько услуг, заявка идёт в общий канал «прочее».
      ══════════════════════════════════════════════════════════════ */
   var ORDER_MAIL = 'alackaord.off@gmail.com';
-
   /* У каждого канала — свой вебхук. Один вебхук = один канал Discord. */
   var WEBHOOKS = {
     build:  'https://discord.com/api/webhooks/1558183403751342151/ZH_NPC5_kD6Lnh28I8V01yCPdMsVYAKq_FZUA1h7a7jMCGBMBcen7wLi_dY-q9Bnv7KL',
