@@ -347,6 +347,11 @@ footer .mono { font-family: var(--mono); font-size: 12px; }
   color: var(--dim); border-style: dashed; cursor: not-allowed; opacity: .7;
 }
 .chip-pick.soon-chip:hover { border-color: var(--stroke); }
+.chip-pick em {
+  font-style: normal; font-weight: 400;
+  color: var(--dim); font-size: 11.5px;
+}
+.chip-pick.on em { color: rgba(4,18,26,.75); }
 .field { margin-bottom: 14px; }
 .field label { display: block; font-size: 12.5px; color: var(--dim); margin-bottom: 6px; }
 .field textarea, .field input {
@@ -485,17 +490,20 @@ footer .mono { font-family: var(--mono); font-size: 12px; }
       </div>
 
       <div class="card reveal off">
-        <h3>⚙️ Скрипты на Luau <span class="soon">скоро</span></h3>
-        <p>Механики, магазины с сохранением покупок, ежедневные награды, статистика игрока.</p>
-        <div class="price">пока не беру<small>учусь — вернусь к этому, когда буду уверен в результате</small></div>
+        <h3>⚙️ Скрипты на Luau <span class="soon">частично</span></h3>
+        <p>Простые механики и логика к интерфейсам — беру. Сложные системы для игры — пока учусь.</p>
+        <div class="price">простые — обсудим<small>опиши задачу своими словами, я скажу честно: возьмусь или нет</small></div>
       </div>
     </div>
 
     <div class="note reveal" style="margin-top:20px">
-      <b>Честно про скрипты.</b> Постройки и интерфейсы делаю уверенно и беру в работу.
-      А вот сложную логику для игры пока изучаю — поэтому не беру заказы на скрипты,
-      чтобы не подвести и не сорвать срок. Если задача срочная — лучше обратись к тому,
-      кто уже умеет, а я вернусь к этому направлению позже.
+      <b>Про скрипты — честно и без крайностей.</b> Постройки и интерфейсы делаю уверенно.
+      Со скриптами так: <b>если задача простая, я возьмусь</b> — например, кнопка, счётчик,
+      логика к готовому интерфейсу, простая механика. А сложные системы для игры пока изучаю
+      и за них не берусь.<br><br>
+      Поэтому <b>опиши, что нужно сделать</b> — своими словами, без технических терминов.
+      Я посмотрю и скажу прямо: возьмусь или нет. Если не возьмусь — подскажу, к кому пойти,
+      или предложу упрощённый вариант, который смогу сделать.
     </div>
   </section>
 
@@ -600,7 +608,7 @@ footer .mono { font-family: var(--mono); font-size: 12px; }
         <div class="chips" id="ordServices">
           <button class="chip-pick" type="button" data-svc="build">🏗️ постройка</button>
           <button class="chip-pick" type="button" data-svc="gui">🖥️ GUI</button>
-          <button class="chip-pick soon-chip" type="button" disabled title="Скрипты пока не беру — учусь">⚙️ скрипт · скоро</button>
+          <button class="chip-pick" type="button" data-svc="script">⚙️ скрипт <em>· если простой</em></button>
         </div>
 
         <div class="field">
