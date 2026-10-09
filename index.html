@@ -718,8 +718,8 @@ footer .mono { font-family: var(--mono); font-size: 12px; }
      3. Кнопка «скопировать» и прямая ссылка на Telegram — на случай,
         если у клиента ничего не открылось.
      ══════════════════════════════════════════════════════════════ */
-  var ORDER_MAIL = 'ЗАМЕНИ_НА_СВОЮ_ПОЧТУ@example.com';   // ← сюда впиши свою почту
-  var ORDER_WEBHOOK = '';                                  // ← сюда вставь адрес Discord-вебхука
+  var ORDER_MAIL = 'alackaord.off@gmail.com';
+  var ORDER_WEBHOOK = 'https://discord.com/api/webhooks/1558175670138314762/NhAcfZu7f99hZT1VJ_PFutThvL1rNazM3yvdnuaCRFw4zkm62fA93xsK9DSge4J76fEM';
 
   var picked = [];
   var chips = document.querySelectorAll('.chip-pick');
@@ -794,10 +794,6 @@ footer .mono { font-family: var(--mono); font-size: 12px; }
   /* ── 1. отправка по почте ── */
   document.getElementById('ordMail').addEventListener('click', function () {
     if (!ready()) return;
-    if (ORDER_MAIL.indexOf('@example.com') > 0) {
-      setStatus('Почта для заявок ещё не настроена — напиши мне в Telegram, кнопка ниже.', 'bad');
-      return;
-    }
     var subject = 'Заявка с сайта: ' + (picked.join(', ') || 'Roblox');
     var link = 'mailto:' + ORDER_MAIL +
       '?subject=' + encodeURIComponent(subject) +
@@ -809,10 +805,6 @@ footer .mono { font-family: var(--mono); font-size: 12px; }
   /* ── 2. отправка в Discord через вебхук ── */
   document.getElementById('ordDiscord').addEventListener('click', function () {
     if (!ready()) return;
-    if (!ORDER_WEBHOOK) {
-      setStatus('Приём в Discord ещё не настроен — напиши мне в Telegram или отправь по почте.', 'bad');
-      return;
-    }
     if (tooSoon()) {
       setStatus('Ты только что отправлял заявку. Если нужно ещё — напиши прямо в Telegram.', 'bad');
       return;
@@ -840,7 +832,7 @@ footer .mono { font-family: var(--mono); font-size: 12px; }
       }
     }).catch(function () {
       btn.disabled = false;
-      setStatus('Не получилось отправить — похоже, сеть блокирует. Скопируй текст кнопкой ниже и пришли в Telegram.', 'bad');
+      setStatus('Отправка не прошла. Попробуй кнопку «Отправить по почте» или напиши мне в Telegram — текст можно скопировать кнопкой ниже.', 'bad');
     });
   });
 
