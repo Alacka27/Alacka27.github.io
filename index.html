@@ -555,9 +555,9 @@ footer .mono { font-family: var(--mono); font-size: 12px; }
       <div class="ob-col">
         <div class="ob-label">Что нужно сделать</div>
         <div class="chips" id="ordServices">
-          <button class="chip-pick" type="button" data-svc="постройка или локация">🏗️ постройка</button>
-          <button class="chip-pick" type="button" data-svc="GUI и интерфейс">🖥️ GUI</button>
-          <button class="chip-pick" type="button" data-svc="скрипт на Luau">⚙️ скрипт</button>
+          <button class="chip-pick" type="button" data-svc="build">🏗️ постройка</button>
+          <button class="chip-pick" type="button" data-svc="gui">🖥️ GUI</button>
+          <button class="chip-pick" type="button" data-svc="script">⚙️ скрипт</button>
         </div>
 
         <div class="field">
@@ -717,9 +717,45 @@ footer .mono { font-family: var(--mono); font-size: 12px; }
         и вставь новый адрес ниже.
      3. Кнопка «скопировать» и прямая ссылка на Telegram — на случай,
         если у клиента ничего не открылось.
+
+     Заявка уходит в РАЗНЫЕ КАНАЛЫ по типу услуги: выбрал постройку — летит
+     в канал построек, выбрал GUI — в канал интерфейсов. Если клиент выбрал
+     сразу несколько услуг, заявка идёт в общий канал «прочее».
      ══════════════════════════════════════════════════════════════ */
   var ORDER_MAIL = 'alackaord.off@gmail.com';
-  var ORDER_WEBHOOK = 'https://discord.com/api/webhooks/1558175670138314762/NhAcfZu7f99hZT1VJ_PFutThvL1rNazM3yvdnuaCRFw4zkm62fA93xsK9DSge4J76fEM';
+
+  /* У каждого канала — свой вебхук. Один вебхук = один канал Discord. */
+  var WEBHOOKS = {
+    build:  'https://discord.com/api/webhooks/1558183403751342151/ZH_NPC5_kD6Lnh28I8V01yCPdMsVYAKq_FZUA1h7a7jMCGBMBcen7wLi_dY-q9Bnv7KL',
+    gui:    'https://discord.com/api/webhooks/1558178508449128609/gVgUT3lYhFKHBUuYmBBeyOAbkO4WluuXQ6_miAeE_xYbiy8iEeJVv2TEx8qJHAYxFHlP',
+    script: 'https://discord.com/api/webhooks/1558184723631841280/Pu_Yc91JZQbCs9xbsy_EZEVo7otn0WdAMGe-RG5xIJj9G4ZywpxvqP7fAtq3D2MWplMX',
+    other:  'https://discord.com/api/webhooks/1558184943933460520/M_a49RrZE5XPVQ0jDokbIEfTj1zhKbVjUbC7xY4AutsKVpg9fd6Q1I9WKb2xKDRa1kpL'
+  };
+  var CHANNEL_TITLE = {
+    build:  '🏗️ Заявка: ПОСТРОЙКИ',
+    gui:    '🖥️ Заявка: GUI',
+    script: '⚙️ Заявка: СКРИПТЫ',
+    other:  '📦 Заявка: несколько услуг'
+  };
+
+  /* Какая услуга в какой канал идёт */
+  var SERVICE_ROUTE = {
+    'build':  'build',
+    'gui':    'gui',
+    'script': 'script'
+  };
+  var SERVICE_NAME = {
+    'build':  'постройка или локация',
+    'gui':    'GUI и интерфейс',
+    'script': 'скрипт на Luau'
+  };
+
+  /* Определяем канал по выбранным услугам:
+     одна услуга → её канал, ноль или несколько → «прочее». */
+  function routeFor(pickedKeys) {
+    if (pickedKeys.length === 1 && SERVICE_ROUTE[pickedKeys[0]]) return SERVICE_ROUTE[pickedKeys[0]];
+    return 'other';
+  }
 
   var picked = [];
   var chips = document.querySelectorAll('.chip-pick');
@@ -751,8 +787,9 @@ footer .mono { font-family: var(--mono); font-size: 12px; }
 
   function collect() {
     var what = (ordWhat.value || '').trim();
+    var names = picked.map(function (k) { return SERVICE_NAME[k] || k; });
     var lines = ['Привет! Нужна помощь с Roblox.'];
-    if (picked.length) lines.push('Что нужно: ' + picked.join(', ') + '.');
+    if (names.length) lines.push('Что нужно: ' + names.join(', ') + '.');
     if (what) lines.push('Детали: ' + what);
     if (ordDeadline.value) lines.push('Срок: до ' + ordDeadline.value + '.');
     if (ordBudget.value) lines.push('Бюджет: ' + Number(ordBudget.value).toLocaleString('ru-RU') + ' ₽.');
@@ -794,7 +831,8 @@ footer .mono { font-family: var(--mono); font-size: 12px; }
   /* ── 1. отправка по почте ── */
   document.getElementById('ordMail').addEventListener('click', function () {
     if (!ready()) return;
-    var subject = 'Заявка с сайта: ' + (picked.join(', ') || 'Roblox');
+    var names = picked.map(function (k) { return SERVICE_NAME[k] || k; });
+    var subject = 'Заявка с сайта: ' + (names.join(', ') || 'Roblox');
     var link = 'mailto:' + ORDER_MAIL +
       '?subject=' + encodeURIComponent(subject) +
       '&body=' + encodeURIComponent(collect());
@@ -810,17 +848,25 @@ footer .mono { font-family: var(--mono); font-size: 12px; }
       return;
     }
 
+    /* выбираем канал по типу услуги */
+    var route = routeFor(picked);
+    var hook = WEBHOOKS[route];
+    if (!hook) {
+      setStatus('Приём в Discord ещё не настроен — отправь по почте или напиши в Telegram.', 'bad');
+      return;
+    }
+
     var text = collect();
     setStatus('Отправляю…');
     this.disabled = true;
     var btn = this;
 
-    fetch(ORDER_WEBHOOK, {
+    fetch(hook, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         username: 'Заявка с сайта Alacka',
-        content: text.slice(0, 1900)
+        content: '**' + (CHANNEL_TITLE[route] || 'Заявка') + '**\n' + text
       })
     }).then(function (res) {
       btn.disabled = false;
@@ -828,11 +874,11 @@ footer .mono { font-family: var(--mono); font-size: 12px; }
         remember();
         setStatus('Заявка отправлена! Я увижу её в Discord и отвечу. Если хочешь быстрее — продублируй в Telegram.', 'good');
       } else {
-        setStatus('Discord не принял заявку (ошибка ' + res.status + '). Напиши мне в Telegram — кнопка ниже.', 'bad');
+        setStatus('Discord не принял заявку (ошибка ' + res.status + '). Отправь по почте или напиши в Telegram.', 'bad');
       }
     }).catch(function () {
       btn.disabled = false;
-      setStatus('Отправка не прошла. Попробуй кнопку «Отправить по почте» или напиши мне в Telegram — текст можно скопировать кнопкой ниже.', 'bad');
+      setStatus('Отправка не прошла. Попробуй кнопку «Отправить по почте» или напиши мне в Telegram.', 'bad');
     });
   });
 
