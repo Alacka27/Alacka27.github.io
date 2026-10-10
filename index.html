@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Alacka — разработка для Roblox</title>
 <meta name="description" content="Строю локации и делаю GUI для Roblox. Работаю под псевдонимом, оплата в рублях.">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#127918;</text></svg>">
+<link rel="icon" href="assets/shop%20logo.svg" type="image/svg+xml">
 <style>
 /* ══════════════════════════════════════════════════════════════
    Alacka — персональный сайт-портфолио Roblox-разработчика.
@@ -80,6 +80,16 @@ header {
   display: flex; align-items: center; gap: 20px;
   height: 62px;
 }
+.shop-logo {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 9px;
+  border-radius: 8px;
+  background: #fff;
+  line-height: 0;
+}
+.shop-logo img { display: block; width: 132px; height: auto; }
+
 .logo {
   font-family: var(--mono); font-weight: 700; font-size: 16px;
   letter-spacing: .14em; text-transform: uppercase;
@@ -202,6 +212,14 @@ h2 {
 }
 .card:hover::after { opacity: 1; }
 .card h3 { margin: 0 0 8px; font-size: 17.5px; }
+.card-title { display: flex; align-items: center; gap: 10px; }
+.card-title img, .chip-pick img, .btn .action-icon {
+  display: block;
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
+  filter: brightness(0) invert(1);
+}
 .card p { margin: 0 0 16px; color: var(--dim); font-size: 14.5px; }
 .price {
   font-family: var(--mono); font-size: 13.5px;
@@ -237,6 +255,13 @@ h2 {
   display: block;
 }
 .work:hover { transform: translateY(-4px); border-color: var(--stroke-hi); }
+.work .cover {
+  display: block; width: 100%; aspect-ratio: 16 / 10;
+  object-fit: cover; background: var(--bg-2);
+  border-bottom: 1px solid var(--stroke);
+  transition: transform .35s cubic-bezier(.2,.8,.2,1);
+}
+.work:hover .cover { transform: scale(1.03); }
 .work .thumb {
   aspect-ratio: 16 / 9;
   display: grid; place-items: center;
@@ -296,7 +321,45 @@ h2 {
   cursor: pointer;
 }
 .contact:hover { border-color: var(--stroke-hi); transform: translateY(-2px); }
-.contact .ico { font-size: 22px; }
+.contact .ico { display: grid; place-items: center; flex: 0 0 40px; }
+.brand-icon, .tg-icon { display: block; width: 20px; height: 20px; flex: 0 0 auto; }
+.icon-tile {
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  background: transparent;
+  line-height: 0;
+}
+.icon-tile .brand-icon, .icon-tile .tg-icon {
+  width: 100%;
+  height: 100%;
+  filter: brightness(0) invert(1);
+}
+.contact .icon-tile { width: 34px; height: 34px; }
+.field label { display: block; }
+.field label.field-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.field-label img { display: block; width: 15px; height: 15px; filter: brightness(0) invert(1); }
+.field-label .icon-tile { width: 17px; height: 17px; }
+.payment-hint {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 8px;
+  color: var(--dim);
+  font-size: 12px;
+}
+.payment-hint img { display: block; width: 18px; height: 18px; filter: brightness(0) invert(1); }
+.payment-hint .payment-card-icon {
+  width: 23px;
+  height: 23px;
+}
 .contact .who { font-family: var(--mono); font-size: 11px; color: var(--dim); letter-spacing: .1em; text-transform: uppercase; }
 .contact .val { font-size: 15px; font-weight: 600; }
 
@@ -333,6 +396,7 @@ footer .mono { font-family: var(--mono); font-size: 12px; }
 }
 .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
 .chip-pick {
+  display: inline-flex; align-items: center; gap: 8px;
   font-family: var(--font); font-size: 13px;
   padding: 8px 14px; border-radius: 10px;
   border: 1px solid var(--stroke); background: #0e1420; color: var(--text);
@@ -393,6 +457,25 @@ footer .mono { font-family: var(--mono); font-size: 12px; }
 .badge.closed { color: var(--bad); border-color: rgba(255,107,129,.45); background: rgba(255,107,129,.08); }
 .badge.closed .dot { background: var(--bad); box-shadow: 0 0 10px var(--bad); animation: none; }
 
+/* увеличение картинки по клику */
+.lightbox {
+  position: fixed; inset: 0; z-index: 95; display: none;
+  background: rgba(4, 7, 12, .94);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 30px; cursor: zoom-out;
+}
+.lightbox.on { display: grid; place-items: center; }
+.lightbox img {
+  max-width: 100%; max-height: 100%;
+  border-radius: 12px; border: 1px solid var(--stroke-hi);
+  box-shadow: 0 30px 80px rgba(0,0,0,.7);
+}
+.lightbox .lb-hint {
+  position: absolute; left: 50%; bottom: 22px; transform: translateX(-50%);
+  font-family: var(--mono); font-size: 12px; color: var(--dim);
+}
+
 /* всплывающая подсказка «скопировано» */
 #toast {
   position: fixed; left: 50%; bottom: 30px;
@@ -421,6 +504,143 @@ footer .mono { font-family: var(--mono); font-size: 12px; }
   .hero { padding: 60px 0 48px; }
   section { padding: 50px 0; }
 }
+
+:root {
+  --bg: #0b0712;
+  --bg-2: #130d1d;
+  --card: rgba(23, 16, 34, .88);
+  --stroke: rgba(214, 184, 255, .15);
+  --stroke-hi: rgba(196, 132, 252, .58);
+  --text: #f5efff;
+  --dim: #b6a9c9;
+  --accent: #c084fc;
+  --accent-2: #8b5cf6;
+  --lime: #c084fc;
+  --radius: 14px;
+  --font: "Segoe UI", Inter, system-ui, -apple-system, sans-serif;
+}
+
+body { background: linear-gradient(180deg, #0a0710 0%, #100a19 100%); }
+body::before {
+  background:
+    radial-gradient(780px 520px at 8% -10%, rgba(160, 80, 255, .17), transparent 64%),
+    radial-gradient(680px 480px at 95% 10%, rgba(111, 61, 192, .12), transparent 62%),
+    radial-gradient(900px 700px at 55% 110%, rgba(121, 58, 198, .09), transparent 62%);
+}
+
+body::after {
+  opacity: .24;
+  background-image:
+    linear-gradient(rgba(189, 149, 237, .04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(189, 149, 237, .04) 1px, transparent 1px);
+}
+#stars { opacity: .2; }
+.wrap { max-width: 1120px; }
+header {
+  background: rgba(11, 7, 18, .86);
+  border-bottom-color: rgba(214, 184, 255, .12);
+}
+.nav { height: 68px; }
+.shop-logo {
+  display: inline-flex;
+  align-items: center;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  line-height: 0;
+}
+.shop-logo img {
+  display: block;
+  width: 138px;
+  height: auto;
+  filter: brightness(0) saturate(100%) invert(72%) sepia(45%) saturate(2475%) hue-rotate(224deg) brightness(104%) contrast(101%) drop-shadow(0 0 10px rgba(168, 85, 247, .32));
+}
+.logo { display: none; }
+.hero { padding-top: 104px; padding-bottom: 86px; }
+h1 {
+  max-width: 820px;
+  font-size: 68px;
+  line-height: 1.06;
+  letter-spacing: -.035em;
+}
+h1 .grad { background-image: linear-gradient(100deg, #d7a7ff, #a879ff 58%, #e3b8ff); }
+h2 { font-size: 36px; letter-spacing: -.025em; }
+.lead { max-width: 620px; font-size: 18px; }
+.sec-head { margin-bottom: 28px; }
+.sec-kicker { letter-spacing: .16em; }
+.skill { border-radius: 8px; }
+.btn {
+  border-radius: 10px;
+  transition: transform .16s ease, box-shadow .16s ease, background .16s ease;
+}
+.btn-main {
+  color: #170d24;
+  background: #c084fc;
+  box-shadow: 0 8px 24px rgba(164, 97, 236, .22);
+}
+.btn-main:hover { box-shadow: 0 12px 30px rgba(164, 97, 236, .34); }
+.btn-ghost { background: rgba(23, 16, 34, .72); }
+.card, .work, .step, .contact, .order-box { border-radius: var(--radius); }
+.card { padding: 25px 23px 22px; }
+.card::after { background: linear-gradient(90deg, #a855f7, #d8b4fe); }
+.price { color: var(--accent); }
+.tag {
+  color: var(--accent);
+  background: rgba(192, 132, 252, .08);
+  border-color: rgba(192, 132, 252, .2);
+}
+.step::before {
+  color: #170d24;
+  background: #c084fc;
+}
+.chip-pick.on { color: #170d24; background: #c084fc; }
+.field textarea, .field input, #ordPreview {
+  border-radius: 8px;
+  background: #0d0913;
+  color: var(--text);
+  border-color: rgba(214, 184, 255, .16);
+}
+.field textarea:focus, .field input:focus { border-color: var(--accent); }
+.order-box { padding: 28px; gap: 30px; }
+.notice { border-radius: 10px; }
+.note { border-radius: 10px; }
+.contact:hover { border-color: var(--accent); }
+.works { grid-template-columns: minmax(0, 1fr); }
+#works .work:first-child { max-width: 820px; }
+#how .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+#how .step:last-child { grid-column: 1 / -1; }
+
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+@media (max-width: 720px) {
+  .nav { gap: 12px; }
+  .nav-links {
+    display: flex;
+    min-width: 0;
+    gap: 14px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .nav-links::-webkit-scrollbar { display: none; }
+  .nav-links a { flex: 0 0 auto; font-size: 12px; }
+  .shop-logo img { width: 112px; }
+  .hero { padding: 68px 0 56px; }
+  h1 { font-size: 42px; }
+  h2 { font-size: 30px; }
+  section { padding: 58px 0; }
+  .order-box { padding: 20px; gap: 24px; }
+  #how .steps { grid-template-columns: 1fr; }
+  #how .step:last-child { grid-column: auto; }
+}
+
+@media (max-width: 390px) {
+  .wrap { padding-right: 16px; padding-left: 16px; }
+  .nav { gap: 10px; }
+  .shop-logo img { width: 96px; }
+  .nav-links { gap: 10px; }
+  .nav-links a { font-size: 11px; }
+  h1 { font-size: 38px; }
+}
 </style>
 </head>
 <body>
@@ -429,7 +649,9 @@ footer .mono { font-family: var(--mono); font-size: 12px; }
 
 <header>
   <div class="wrap nav">
-    <a class="logo" href="#top">Alacka</a>
+    <a class="shop-logo" href="#top" aria-label="На главную">
+      <img src="assets/shop%20logo.svg" alt="Shop">
+    </a>
     <nav class="nav-links">
       <a href="#services">услуги</a>
       <a href="#works">работы</a>
@@ -446,12 +668,11 @@ footer .mono { font-family: var(--mono); font-size: 12px; }
   <section class="hero wrap">
     <div class="badge" id="statusBadge"><span class="dot"></span> <span id="statusText">свободен для заказов</span></div>
 
-    <h1>Строю локации<br>и делаю интерфейсы для <span class="grad">Roblox</span></h1>
+    <h1>Локации и интерфейсы<br>для <span class="grad">Roblox</span></h1>
 
     <p class="lead">
-      Меня зовут <b>Alacka</b>. Я разработчик Roblox: строю локации и собираю интерфейсы —
-      меню, магазины, HUD. Беру отдельные задачи и делаю их аккуратно, без обещаний,
-      которые не смогу выполнить.
+      Я Alacka. Делаю игровые локации и интерфейсы для Roblox — от меню и HUD до небольших карт.
+      Расскажи, что задумал, и обсудим задачу.
     </p>
 
     <div class="skills">
@@ -469,41 +690,28 @@ footer .mono { font-family: var(--mono); font-size: 12px; }
   <section id="services" class="wrap">
     <div class="sec-head reveal">
       <p class="sec-kicker">услуги и цены</p>
-      <h2>Что я могу сделать</h2>
-      <p class="sec-sub">
-        Цены — за задачу целиком, а не за час. Точную сумму называю после того,
-        как пойму объём: напиши, что нужно, и я скажу, сколько это займёт и стоит.
-      </p>
+      <h2>Чем могу помочь</h2>
+      <p class="sec-sub">Стоимость зависит от объёма. Сначала обсудим задачу, цену и сроки — потом начну.</p>
     </div>
 
     <div class="cards">
       <div class="card reveal">
-        <h3>🏗️ Постройки и локации</h3>
-        <p>Лобби, карты, арены, декорации под стиль твоей игры. Собираю аккуратно, с оптимизацией под слабые телефоны.</p>
+        <h3 class="card-title"><img src="assets/building-complex.svg" alt="">Постройки и локации</h3>
+        <p>Лобби, небольшие карты и игровые пространства. Учитываю стиль игры и стараюсь, чтобы всё работало на телефонах.</p>
         <div class="price">от 300 ₽<small>небольшая локация — за 1–2 дня</small></div>
       </div>
 
       <div class="card reveal">
-        <h3>🖥️ GUI и HUD</h3>
-        <p>Меню, магазин, инвентарь, настройки, полоски здоровья, таблица лидеров. Адаптивно под телефон и компьютер.</p>
+        <h3 class="card-title"><img src="assets/app-window%28GUI%29.svg" alt="">GUI и HUD</h3>
+        <p>Меню, магазин, инвентарь и HUD. Подгоняю интерфейс под экран телефона и компьютера.</p>
         <div class="price">от 250 ₽<small>готовый интерфейс с логикой</small></div>
       </div>
 
       <div class="card reveal off">
-        <h3>⚙️ Скрипты на Luau <span class="soon">частично</span></h3>
-        <p>Простые механики и логика к интерфейсам — беру. Сложные системы для игры — пока учусь.</p>
-        <div class="price">простые — обсудим<small>опиши задачу своими словами, я скажу честно: возьмусь или нет</small></div>
+        <h3 class="card-title"><img src="assets/code.svg" alt="">Скрипты на Luau <span class="soon">частично</span></h3>
+        <p>Беру небольшие механики и скрипты для готовых интерфейсов. Большие игровые системы пока не беру.</p>
+        <div class="price">небольшие задачи<small>сначала обсудим, подойдёт ли задача</small></div>
       </div>
-    </div>
-
-    <div class="note reveal" style="margin-top:20px">
-      <b>Про скрипты — честно и без крайностей.</b> Постройки и интерфейсы делаю уверенно.
-      Со скриптами так: <b>если задача простая, я возьмусь</b> — например, кнопка, счётчик,
-      логика к готовому интерфейсу, простая механика. А сложные системы для игры пока изучаю
-      и за них не берусь.<br><br>
-      Поэтому <b>опиши, что нужно сделать</b> — своими словами, без технических терминов.
-      Я посмотрю и скажу прямо: возьмусь или нет. Если не возьмусь — подскажу, к кому пойти,
-      или предложу упрощённый вариант, который смогу сделать.
     </div>
   </section>
 
@@ -511,39 +719,20 @@ footer .mono { font-family: var(--mono); font-size: 12px; }
   <section id="works" class="wrap">
     <div class="sec-head reveal">
       <p class="sec-kicker">портфолио</p>
-      <h2>Что я уже сделал</h2>
-      <p class="sec-sub">
-        Ниже — места под реальные работы. Как только будет готов скриншот или ссылка на игру,
-        карточку можно заменить за минуту (подсказки прямо в файле <code>index.html</code>).
-      </p>
+      <h2>Одна из моих работ</h2>
     </div>
 
     <div class="works">
-      <!-- ЗАМЕНИ ЭТУ КАРТОЧКУ: вставь <img src="work-1.png" alt="..."> вместо .thumb -->
-      <a class="work reveal" href="#contact">
-        <div class="thumb">сюда — скриншот твоей локации<br>(замени блок .thumb на &lt;img&gt;)</div>
+      <article class="work reveal">
         <div class="body">
-          <h3>Локация / билд</h3>
-          <p>Опиши в одном предложении, что это за карта и для чего она.</p>
-          <div class="tags"><span class="tag">строительство</span><span class="tag">оптимизация</span></div>
+          <h3>Кофейня · интерьер</h3>
+          <p>Тёплый интерьер для тайкуна: стойка, витрина с выпечкой и места для гостей.</p>
+          <div class="tags">
+            <span class="tag">строительство</span>
+            <span class="tag">интерьер</span>
+          </div>
         </div>
-      </a>
-
-      <a class="work reveal" href="#order">
-        <div class="thumb">сюда — скриншот интерфейса</div>
-        <div class="body">
-          <h3>Интерфейс / GUI</h3>
-          <p>Например: магазин с покупкой за игровую валюту и сохранением.</p>
-          <div class="tags"><span class="tag">GUI</span><span class="tag">Luau</span></div>
-        </div>
-      </a>
-    </div>
-
-    <div class="note reveal">
-      <b>Пока портфолио пустое — это нормально.</b> Первым клиентам честно говори:
-      «работы будут ниже, я начинающий, поэтому цена ниже рынка».
-      Такой подход продаёт лучше, чем притворяться опытным: люди любят поддержать новичка,
-      если видят, что он не врёт.
+      </article>
     </div>
   </section>
 
@@ -551,39 +740,39 @@ footer .mono { font-family: var(--mono); font-size: 12px; }
   <section id="how" class="wrap">
     <div class="sec-head reveal">
       <p class="sec-kicker">процесс</p>
-      <h2>Как проходит заказ</h2>
-      <p class="sec-sub">Просто и без сюрпризов: ты всегда знаешь, на каком этапе работа.</p>
+      <h2>Как будем работать</h2>
+      <p class="sec-sub">Сначала договоримся о задаче, цене и сроках. Потом я приступлю к работе.</p>
     </div>
 
     <div class="steps">
       <div class="step reveal">
         <div>
-          <h3>Ты пишешь, что нужно</h3>
-          <p>Опиши своими словами. Можно без технических терминов — я задам уточняющие вопросы сам.</p>
+          <h3>Обсудим идею</h3>
+          <p>Расскажи, что нужно. Я уточню детали.</p>
         </div>
       </div>
       <div class="step reveal">
         <div>
-          <h3>Я называю цену и срок</h3>
-          <p>Фиксированная сумма за задачу и конкретная дата. Без «ну посмотрим по ходу».</p>
+          <h3>Согласуем цену и срок</h3>
+          <p>До начала работы договоримся о стоимости и сроках.</p>
         </div>
       </div>
       <div class="step reveal">
         <div>
-          <h3>Предоплата 50%</h3>
-          <p>Перевод на карту. Вторая половина — только после того, как ты принял работу.</p>
+          <h3>Предоплата — 50%</h3>
+          <p>Остаток оплачивается после того, как примешь готовую работу.</p>
         </div>
       </div>
       <div class="step reveal">
         <div>
-          <h3>Показываю прогресс</h3>
-          <p>Скидываю скриншоты или видео по ходу. Ты можешь попросить переделать деталь.</p>
+          <h3>Покажу результат по ходу</h3>
+          <p>Буду присылать скриншоты или видео и учту согласованные правки.</p>
         </div>
       </div>
       <div class="step reveal">
         <div>
-          <h3>Сдаю работу и правки</h3>
-          <p>Отдаю файлы или добавляю тебя в игру. Мелкие правки после сдачи — бесплатно, в течение недели.</p>
+          <h3>Передам готовую работу</h3>
+          <p>После сдачи небольшие правки — бесплатно в течение недели.</p>
         </div>
       </div>
     </div>
@@ -593,47 +782,58 @@ footer .mono { font-family: var(--mono); font-size: 12px; }
   <section id="order" class="wrap">
     <div class="sec-head reveal">
       <p class="sec-kicker">заявка</p>
-      <h2>Расскажи, что нужно</h2>
-      <p class="sec-sub">
-        Выбери услугу и опиши задачу своими словами — я соберу из этого готовое сообщение.
-        Отправишь его мне в Telegram одним нажатием, и я сразу скажу цену и срок.
-      </p>
+      <h2>Расскажи о своей идее</h2>
+      <p class="sec-sub">Напиши, что нужно сделать. Я отвечу и предложу цену и сроки.</p>
     </div>
 
     <div class="notice" id="orderNotice" hidden></div>
 
     <div class="order-box reveal" id="orderForm">
       <div class="ob-col">
-        <div class="ob-label">Что нужно сделать</div>
+        <div class="ob-label">Услуга</div>
         <div class="chips" id="ordServices">
-          <button class="chip-pick" type="button" data-svc="build">🏗️ постройка</button>
-          <button class="chip-pick" type="button" data-svc="gui">🖥️ GUI</button>
-          <button class="chip-pick" type="button" data-svc="script">⚙️ скрипт <em>· если простой</em></button>
+          <button class="chip-pick" type="button" data-svc="build"><img src="assets/building-complex.svg" alt="">постройка</button>
+          <button class="chip-pick" type="button" data-svc="gui"><img src="assets/app-window%28GUI%29.svg" alt="">GUI</button>
+          <button class="chip-pick" type="button" data-svc="script"><img src="assets/code.svg" alt="">скрипт <em>· если простой</em></button>
         </div>
 
         <div class="field">
-          <label for="ordWhat">Опиши задачу</label>
-          <textarea id="ordWhat" placeholder="например: нужен магазин скинов, покупка за монеты, сохранение между сессиями, адаптив под телефон"></textarea>
+          <label for="ordWhat" class="field-label">
+            <span class="icon-tile"><img src="assets/pencil.svg" alt=""></span>
+            Коротко опиши задачу
+          </label>
+          <textarea id="ordWhat" placeholder="Например: меню магазина с покупкой за монеты"></textarea>
         </div>
 
         <div class="row2">
           <div class="field">
-            <label for="ordDeadline">Когда нужно</label>
+            <label for="ordDeadline" class="field-label">
+              <span class="icon-tile"><img src="assets/calendar-fold.svg" alt=""></span>
+              Когда нужно
+            </label>
             <input id="ordDeadline" type="date">
           </div>
           <div class="field">
-            <label for="ordBudget">Бюджет, ₽ <span style="color:#8595ad">(если знаешь)</span></label>
+            <label for="ordBudget" class="field-label">
+              <span class="icon-tile"><img class="brand-icon" src="assets/credit-card.svg" alt=""></span>
+              Бюджет, ₽ <span style="color:#8595ad">(необязательно)</span>
+            </label>
             <input id="ordBudget" type="number" min="0" step="100" placeholder="2000">
+            <div class="payment-hint">
+              <img src="assets/credit-card.svg" alt="">
+              <span>Переводить на Т-Банк</span>
+              <img src="assets/heart.svg" alt="">
+            </div>
           </div>
         </div>
       </div>
 
       <div class="ob-col">
-        <div class="ob-label">Что получится отправить</div>
-        <pre id="ordPreview">выбери услугу и опиши задачу — текст появится здесь</pre>
+        <div class="ob-label">Сообщение</div>
+        <pre id="ordPreview">Выбери услугу или опиши задачу — сообщение появится здесь.</pre>
 
         <div class="field">
-          <label for="ordContact">Как с тобой связаться <span style="color:#8595ad">(ник в Telegram или Discord)</span></label>
+          <label for="ordContact">Твой Telegram или Discord</label>
           <input id="ordContact" placeholder="например: @nickname" autocomplete="off">
         </div>
 
@@ -642,27 +842,40 @@ footer .mono { font-family: var(--mono); font-size: 12px; }
                aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
 
         <div class="cta">
-          <button class="btn btn-main" id="ordMail" type="button">Отправить по почте</button>
-          <button class="btn btn-ghost" id="ordDiscord" type="button">Отправить в Discord</button>
+          <button class="btn btn-main" id="ordMail" type="button">
+            <span class="icon-tile"><img class="brand-icon" src="assets/gmail.svg" alt=""></span>
+            Отправить по почте
+          </button>
+          <button class="btn btn-ghost" id="ordDiscord" type="button">
+            <span class="icon-tile"><img class="brand-icon" src="assets/discord.svg" alt=""></span>
+            Отправить в Discord
+          </button>
         </div>
         <div class="cta" style="margin-top:10px">
-          <button class="btn btn-ghost" id="ordCopy" type="button">Скопировать текст</button>
-          <a class="btn btn-ghost" id="ordTg" href="https://t.me/alacka27" target="_blank" rel="noopener">Написать в Telegram</a>
+          <button class="btn btn-ghost" id="ordCopy" type="button">
+            <img class="action-icon" src="assets/copy.svg" alt="">
+            Скопировать текст
+          </button>
+          <a class="btn btn-ghost" id="ordTg" href="https://t.me/alacka27" target="_blank" rel="noopener">
+            <span class="icon-tile"><img class="tg-icon" src="assets/telegram.svg" alt=""></span>
+            Написать в Telegram
+          </a>
         </div>
 
         <p class="ob-hint" id="ordStatus">
-          Заполни описание — текст соберётся сам. Дальше выбирай, как удобнее отправить:
-          по почте или в Discord, либо просто напиши мне в Telegram.
+          Заполни форму и отправь сообщение удобным способом.
         </p>
       </div>
     </div>
 
     <!-- показывается, только когда приём заказов закрыт -->
     <div class="notice closed" id="orderClosed" style="display:none">
-      <b>Форма заявок сейчас закрыта.</b> Напиши прямо в Telegram — если задача срочная,
-      обсудим отдельно, возможно найду окно.
+      <b>Пока не беру новые заказы.</b> Можно написать мне в Telegram — отвечу, когда смогу.
       <div style="margin-top:12px">
-        <a class="btn btn-main" href="https://t.me/alacka27" target="_blank" rel="noopener">Написать в Telegram</a>
+        <a class="btn btn-main" href="https://t.me/alacka27" target="_blank" rel="noopener">
+          <span class="icon-tile"><img class="tg-icon" src="assets/telegram.svg" alt=""></span>
+          Написать в Telegram
+        </a>
       </div>
     </div>
   </section>
@@ -672,42 +885,44 @@ footer .mono { font-family: var(--mono); font-size: 12px; }
     <div class="sec-head reveal">
       <p class="sec-kicker">связаться</p>
       <h2>Напиши — обсудим</h2>
-      <p class="sec-sub">
-        Отвечаю быстро. Если не знаешь, с чего начать, напиши просто
-        «привет, нужна помощь с игрой» — дальше разберёмся вместе.
-      </p>
+      <p class="sec-sub">Есть идея для Roblox? Напиши мне в Telegram или по почте.</p>
     </div>
 
     <div class="contacts">
       <a class="contact reveal" href="https://t.me/alacka27" target="_blank" rel="noopener">
-        <span class="ico">✈️</span>
+        <span class="ico">
+          <span class="icon-tile"><img class="tg-icon" src="assets/telegram.svg" alt=""></span>
+        </span>
         <span>
           <span class="who">Telegram</span>
           <span class="val">@alacka27</span>
         </span>
       </a>
 
-      <div class="contact reveal" data-copy="alacka27">
-        <span class="ico">🎮</span>
-        <span>
-          <span class="who">Discord (клик — скопировать)</span>
-          <span class="val">alacka27</span>
+      <a class="contact reveal" href="mailto:alackaord.off@gmail.com">
+        <span class="ico">
+          <span class="icon-tile"><img class="brand-icon" src="assets/gmail.svg" alt=""></span>
         </span>
-      </div>
+        <span>
+          <span class="who">Почта</span>
+          <span class="val">alackaord.off@gmail.com</span>
+        </span>
+      </a>
 
       <a class="contact reveal" href="https://www.roblox.com/users/profile" target="_blank" rel="noopener">
-        <span class="ico">🟥</span>
+        <span class="ico">
+          <span class="icon-tile"><img class="brand-icon" src="assets/roblox.svg" alt=""></span>
+        </span>
         <span>
           <span class="who">Roblox</span>
-          <span class="val">профиль Alacka</span>
+          <span class="val">Профиль Alacka</span>
         </span>
       </a>
     </div>
 
     <div class="note reveal">
-      Я работаю <b>под псевдонимом</b> — это нормальная практика в разработке игр.
-      Оплата принимается переводом на карту в рублях, по факту сдачи работы выдаю чек
-      (самозанятость). Предоплата — половина суммы.
+      Работаю под именем <b>Alacka</b>. Беру 50% предоплаты, остальное — после сдачи.
+      Работаю как самозанятый и выдаю чек.
     </div>
   </section>
 
@@ -715,7 +930,6 @@ footer .mono { font-family: var(--mono); font-size: 12px; }
 
 <footer class="wrap">
   <span>© <span id="year"></span> Alacka — разработка для Roblox</span>
-  <span class="mono">сделано вручную, без конструкторов</span>
 </footer>
 
 <div id="toast">скопировано</div>
@@ -771,9 +985,9 @@ footer .mono { font-family: var(--mono); font-size: 12px; }
      или через admin.html) — сайт у всех посетителей сразу показывает новый
      статус. Три положения: open / busy / closed. */
   var STATUS = {
-    open:   { text: 'свободен для заказов', cls: '' },
-    busy:   { text: 'занят · беру в очередь', cls: 'busy' },
-    closed: { text: 'приём заказов закрыт', cls: 'closed' }
+    open:   { text: 'принимаю заказы', cls: '' },
+    busy:   { text: 'занят · можно в очередь', cls: 'busy' },
+    closed: { text: 'пока не беру заказы', cls: 'closed' }
   };
 
   function applyStatus(data) {
@@ -796,15 +1010,13 @@ footer .mono { font-family: var(--mono); font-size: 12px; }
       if (key === 'busy') {
         notice.hidden = false;
         notice.className = 'notice';
-        notice.innerHTML = '<b>Сейчас у меня загруз:</b> ' +
-          (note || 'беру новые заказы в очередь — сроки сдвигаются.') +
-          ' Можешь оставить заявку, но отвечу с задержкой.';
+        notice.innerHTML = '<b>Сейчас занят.</b> ' +
+          (note || 'Могу добавить заказ в очередь и сообщить, когда освобожусь.');
       } else if (key === 'closed') {
         notice.hidden = false;
         notice.className = 'notice closed';
-        notice.innerHTML = '<b>Приём заказов временно закрыт.</b> ' +
-          (note || 'Возобновлю, как только освобожусь.') +
-          ' Если задача срочная — напиши в Telegram, обсудим.';
+        notice.innerHTML = '<b>Новые заказы пока не принимаю.</b> ' +
+          (note || 'Напиши в Telegram — отвечу, когда снова буду свободен.');
       } else {
         notice.hidden = true;
       }
@@ -820,55 +1032,14 @@ footer .mono { font-family: var(--mono); font-size: 12px; }
     .then(function (data) { if (data) applyStatus(data); })
     .catch(function () { /* файла нет или нет сети — оставляем статус по умолчанию */ });
 
-  /* ── форма заказа ──
-     Три способа отправить заявку:
-
-     1. Почта — открывает почтовое приложение клиента с готовым письмом.
-        Ничего настраивать не нужно, ничего не утекает.
-     2. Discord — форма отправляет заявку в твой приватный канал через
-        вебхук. Адрес вебхука виден в исходнике страницы, поэтому канал
-        держи отдельным и неважным: если начнётся флуд — удали вебхук
-        и вставь новый адрес ниже.
-     3. Кнопка «скопировать» и прямая ссылка на Telegram — на случай,
-        если у клиента ничего не открылось.
-
-     Заявка уходит в РАЗНЫЕ КАНАЛЫ по типу услуги: выбрал постройку — летит
-     в канал построек, выбрал GUI — в канал интерфейсов. Если клиент выбрал
-     сразу несколько услуг, заявка идёт в общий канал «прочее».
-     ══════════════════════════════════════════════════════════════ */
+  /* ── форма заказа ── */
   var ORDER_MAIL = 'alackaord.off@gmail.com';
-  /* У каждого канала — свой вебхук. Один вебхук = один канал Discord. */
-  var WEBHOOKS = {
-    build:  'https://discord.com/api/webhooks/1558183403751342151/ZH_NPC5_kD6Lnh28I8V01yCPdMsVYAKq_FZUA1h7a7jMCGBMBcen7wLi_dY-q9Bnv7KL',
-    gui:    'https://discord.com/api/webhooks/1558178508449128609/gVgUT3lYhFKHBUuYmBBeyOAbkO4WluuXQ6_miAeE_xYbiy8iEeJVv2TEx8qJHAYxFHlP',
-    script: 'https://discord.com/api/webhooks/1558184723631841280/Pu_Yc91JZQbCs9xbsy_EZEVo7otn0WdAMGe-RG5xIJj9G4ZywpxvqP7fAtq3D2MWplMX',
-    other:  'https://discord.com/api/webhooks/1558184943933460520/M_a49RrZE5XPVQ0jDokbIEfTj1zhKbVjUbC7xY4AutsKVpg9fd6Q1I9WKb2xKDRa1kpL'
-  };
-  var CHANNEL_TITLE = {
-    build:  '🏗️ Заявка: ПОСТРОЙКИ',
-    gui:    '🖥️ Заявка: GUI',
-    script: '⚙️ Заявка: СКРИПТЫ',
-    other:  '📦 Заявка: несколько услуг'
-  };
-
-  /* Какая услуга в какой канал идёт */
-  var SERVICE_ROUTE = {
-    'build':  'build',
-    'gui':    'gui',
-    'script': 'script'
-  };
+  var DISCORD_ORDER_ENDPOINT = '';
   var SERVICE_NAME = {
     'build':  'постройка или локация',
     'gui':    'GUI и интерфейс',
     'script': 'скрипт на Luau'
   };
-
-  /* Определяем канал по выбранным услугам:
-     одна услуга → её канал, ноль или несколько → «прочее». */
-  function routeFor(pickedKeys) {
-    if (pickedKeys.length === 1 && SERVICE_ROUTE[pickedKeys[0]]) return SERVICE_ROUTE[pickedKeys[0]];
-    return 'other';
-  }
 
   var picked = [];
   var chips = document.querySelectorAll('.chip-pick');
@@ -883,7 +1054,7 @@ footer .mono { font-family: var(--mono); font-size: 12px; }
   function setStatus(text, kind) {
     ordStatus.textContent = text;
     ordStatus.style.color = kind === 'bad' ? '#ff6b81'
-                         : kind === 'good' ? '#7dffb0'
+                         : kind === 'good' ? '#c084fc'
                          : '';
   }
 
@@ -901,21 +1072,21 @@ footer .mono { font-family: var(--mono); font-size: 12px; }
   function collect() {
     var what = (ordWhat.value || '').trim();
     var names = picked.map(function (k) { return SERVICE_NAME[k] || k; });
-    var lines = ['Привет! Нужна помощь с Roblox.'];
-    if (names.length) lines.push('Что нужно: ' + names.join(', ') + '.');
-    if (what) lines.push('Детали: ' + what);
+    var lines = ['Привет! Хочу заказать работу для Roblox.'];
+    if (names.length) lines.push('Услуга: ' + names.join(', ') + '.');
+    if (what) lines.push('Задача: ' + what);
     if (ordDeadline.value) lines.push('Срок: до ' + ordDeadline.value + '.');
     if (ordBudget.value) lines.push('Бюджет: ' + Number(ordBudget.value).toLocaleString('ru-RU') + ' ₽.');
     var contact = (ordContact.value || '').trim();
     if (contact) lines.push('Связаться со мной: ' + contact);
     lines.push('');
-    lines.push('Напиши, сколько это будет стоить и когда сможешь сделать.');
+    lines.push('Подскажи, пожалуйста, стоимость и сроки.');
     return lines.join('\n');
   }
 
   function renderOrder() {
     if (!picked.length && !(ordWhat.value || '').trim()) {
-      prev.textContent = 'выбери услугу и опиши задачу — текст появится здесь';
+      prev.textContent = 'Выбери услугу или опиши задачу — сообщение появится здесь.';
       return;
     }
     prev.textContent = collect();
@@ -925,20 +1096,14 @@ footer .mono { font-family: var(--mono); font-size: 12px; }
   function ready() {
     if (ordTrap.value) return false;                       // сработала ловушка для ботов
     if (!picked.length && !(ordWhat.value || '').trim()) {
-      setStatus('Сначала выбери услугу или опиши задачу, что нужно сделать.', 'bad');
+      setStatus('Выбери услугу или опиши задачу.', 'bad');
       return false;
     }
     return true;
   }
 
-  function remember() {
-    try { localStorage.setItem('alacka.lastOrder', String(Date.now())); } catch (e) {}
-  }
-  function tooSoon() {
-    try {
-      var last = Number(localStorage.getItem('alacka.lastOrder') || 0);
-      return last && (Date.now() - last) < 60000;
-    } catch (e) { return false; }
+  function routeFor(pickedKeys) {
+    return pickedKeys.length === 1 ? pickedKeys[0] : 'other';
   }
 
   /* ── 1. отправка по почте ── */
@@ -949,49 +1114,34 @@ footer .mono { font-family: var(--mono); font-size: 12px; }
     var link = 'mailto:' + ORDER_MAIL +
       '?subject=' + encodeURIComponent(subject) +
       '&body=' + encodeURIComponent(collect());
-    setStatus('Открываю почтовое приложение — отправь письмо, и я отвечу.', 'good');
+    setStatus('Открыл почтовое приложение. Отправь письмо — и я отвечу.', 'good');
     window.location.href = link;
   });
 
-  /* ── 2. отправка в Discord через вебхук ── */
   document.getElementById('ordDiscord').addEventListener('click', function () {
     if (!ready()) return;
-    if (tooSoon()) {
-      setStatus('Ты только что отправлял заявку. Если нужно ещё — напиши прямо в Telegram.', 'bad');
+    if (!DISCORD_ORDER_ENDPOINT) {
+      setStatus('Отправка в Discord пока не настроена. Напиши мне в Telegram.', 'bad');
       return;
     }
 
-    /* выбираем канал по типу услуги */
-    var route = routeFor(picked);
-    var hook = WEBHOOKS[route];
-    if (!hook) {
-      setStatus('Приём в Discord ещё не настроен — отправь по почте или напиши в Telegram.', 'bad');
-      return;
-    }
-
-    var text = collect();
-    setStatus('Отправляю…');
-    this.disabled = true;
-    var btn = this;
-
-    fetch(hook, {
+    var button = this;
+    button.disabled = true;
+    setStatus('Отправляю заявку в Discord…');
+    fetch(DISCORD_ORDER_ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        username: 'Заявка с сайта Alacka',
-        content: '**' + (CHANNEL_TITLE[route] || 'Заявка') + '**\n' + text
-      })
-    }).then(function (res) {
-      btn.disabled = false;
-      if (res.ok || res.status === 204) {
-        remember();
-        setStatus('Заявка отправлена! Я увижу её в Discord и отвечу. Если хочешь быстрее — продублируй в Telegram.', 'good');
-      } else {
-        setStatus('Discord не принял заявку (ошибка ' + res.status + '). Отправь по почте или напиши в Telegram.', 'bad');
-      }
-    }).catch(function () {
-      btn.disabled = false;
-      setStatus('Отправка не прошла. Попробуй кнопку «Отправить по почте» или напиши мне в Telegram.', 'bad');
+      body: JSON.stringify({ service: routeFor(picked), content: collect() })
+    }).then(function (response) {
+      if (!response.ok) throw new Error('HTTP ' + response.status);
+      return response.json();
+    }).then(function () {
+      setStatus('Заявка отправлена. Скоро отвечу.', 'good');
+    }).catch(function (error) {
+      console.error('Не удалось отправить заявку в Discord:', error);
+      setStatus('Не удалось отправить заявку. Попробуй почту или Telegram.', 'bad');
+    }).then(function () {
+      button.disabled = false;
     });
   });
 
@@ -1008,6 +1158,28 @@ footer .mono { font-family: var(--mono); font-size: 12px; }
         function () { showToast('выдели текст и скопируй вручную'); }
       );
     } else { showToast('выдели текст и скопируй вручную'); }
+  });
+
+  /* ── увеличение скриншотов работ ──
+     Клик по карточке открывает картинку целиком: заказчику важно разглядеть детали. */
+  var lb = document.createElement('div');
+  lb.className = 'lightbox';
+  lb.innerHTML = '<img alt="Увеличенный скриншот работы"><div class="lb-hint">клик или Esc — закрыть</div>';
+  document.body.appendChild(lb);
+  var lbImg = lb.querySelector('img');
+
+  document.querySelectorAll('[data-zoom]').forEach(function (el) {
+    el.addEventListener('click', function (ev) {
+      ev.preventDefault();
+      lbImg.src = el.getAttribute('data-zoom');
+      lb.classList.add('on');
+    });
+  });
+
+  function closeLightbox() { lb.classList.remove('on'); lbImg.src = ''; }
+  lb.addEventListener('click', closeLightbox);
+  document.addEventListener('keydown', function (ev) {
+    if (ev.key === 'Escape' && lb.classList.contains('on')) closeLightbox();
   });
 
   /* ── фон: медленно плывущие точки и связи между ними ──
