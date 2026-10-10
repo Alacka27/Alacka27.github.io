@@ -1106,6 +1106,15 @@ h2 { font-size: 36px; letter-spacing: -.025em; }
     return pickedKeys.length === 1 ? pickedKeys[0] : 'other';
   }
 
+  function webhookSecretName(service) {
+    return {
+      build: 'DISCORD_WEBHOOK_BUILD',
+      gui: 'DISCORD_WEBHOOK_GUI',
+      script: 'DISCORD_WEBHOOK_SCRIPT',
+      other: 'DISCORD_WEBHOOK_OTHER'
+    }[service] || 'DISCORD_WEBHOOK_OTHER';
+  }
+
   /* ── 1. отправка по почте ── */
   document.getElementById('ordMail').addEventListener('click', function () {
     if (!ready()) return;
@@ -1128,18 +1137,39 @@ h2 { font-size: 36px; letter-spacing: -.025em; }
     var button = this;
     button.disabled = true;
     setStatus('Отправляю заявку в Discord…');
+    var service = routeFor(picked);
     fetch(DISCORD_ORDER_ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ service: routeFor(picked), content: collect() })
+      body: JSON.stringify({ service: service, content: collect() })
     }).then(function (response) {
-      if (!response.ok) throw new Error('HTTP ' + response.status);
-      return response.json();
+      return response.json().catch(function () { return null; }).then(function (data) {
+        if (!response.ok) {
+          var error = new Error(data && typeof data.error === 'string' ? data.error : 'Ошибка HTTP ' + response.status);
+          error.status = response.status;
+          throw error;
+        }
+        if (!data || data.ok !== true) throw new Error('Worker вернул неожиданный ответ.');
+        return data;
+      });
     }).then(function () {
       setStatus('Заявка отправлена. Скоро отвечу.', 'good');
     }).catch(function (error) {
       console.error('Не удалось отправить заявку в Discord:', error);
-      setStatus('Не удалось отправить заявку. Попробуй почту или Telegram.', 'bad');
+      if (error.status === 503) {
+        setStatus('В Cloudflare Worker не настроен Secret ' + webhookSecretName(service) +
+          '. Добавь его в настройках Worker и попробуй снова.', 'bad');
+      } else if (error.status === 502) {
+        setStatus('Discord отклонил webhook. Проверь, что Secret ' + webhookSecretName(service) +
+          ' содержит действующий URL вебхука.', 'bad');
+      } else if (error.status === 400 || error.status === 413) {
+        setStatus('Worker отклонил заявку. Проверь описание и попробуй отправить ещё раз.', 'bad');
+      } else if (error instanceof TypeError) {
+        setStatus('Не удалось связаться с Worker. Проверь его адрес и настройки доступа.', 'bad');
+      } else {
+        setStatus('Не удалось отправить заявку' + (error.status ? ' (HTTP ' + error.status + ')' : '') +
+          '. Попробуй почту или Telegram.', 'bad');
+      }
     }).then(function () {
       button.disabled = false;
     });
