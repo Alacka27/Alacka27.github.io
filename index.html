@@ -347,6 +347,7 @@ h2 {
 }
 .field-label img { display: block; width: 15px; height: 15px; filter: brightness(0) invert(1); }
 .field-label .icon-tile { width: 17px; height: 17px; }
+#ordDiscord .icon-tile { transform: translateX(-3px); }
 .payment-hint {
   display: flex;
   align-items: center;
@@ -426,8 +427,14 @@ footer .mono { font-family: var(--mono); font-size: 12px; }
 }
 .field textarea { resize: vertical; min-height: 92px; }
 .field textarea:focus, .field input:focus { border-color: var(--stroke-hi); }
+.promo-entry { display: flex; gap: 8px; }
+.promo-entry .btn { flex: 0 0 auto; padding: 10px 14px; font-size: 13px; }
+.promo-hint { min-height: 18px; margin: 6px 0 0; color: var(--dim); font-size: 12px; }
+.promo-hint.good { color: #7dffb0; }
+.promo-hint.bad { color: #ff8a9b; }
 .row2 { display: grid; gap: 12px; grid-template-columns: 1fr 1fr; }
 @media (max-width: 520px) { .row2 { grid-template-columns: 1fr; } }
+@media (max-width: 380px) { .promo-entry { flex-wrap: wrap; } .promo-entry .btn { width: 100%; } }
 
 #ordPreview {
   flex: 1; min-height: 210px; margin: 0 0 16px;
@@ -602,6 +609,8 @@ h2 { font-size: 36px; letter-spacing: -.025em; }
 }
 .field textarea:focus, .field input:focus { border-color: var(--accent); }
 .order-box { padding: 28px; gap: 30px; }
+.order-actions { flex-wrap: nowrap; }
+.order-actions > .btn { padding-right: 14px; padding-left: 14px; white-space: nowrap; }
 .notice { border-radius: 10px; }
 .note { border-radius: 10px; }
 .contact:hover { border-color: var(--accent); }
@@ -611,6 +620,11 @@ h2 { font-size: 36px; letter-spacing: -.025em; }
 #how .step:last-child { grid-column: 1 / -1; }
 
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+@media (max-width: 520px) {
+  .order-actions { flex-wrap: wrap; }
+  .order-actions > .btn { flex: 1 1 100%; }
+}
 
 @media (max-width: 720px) {
   .nav { gap: 12px; }
@@ -826,6 +840,16 @@ h2 { font-size: 36px; letter-spacing: -.025em; }
             </div>
           </div>
         </div>
+        <div class="cta order-actions">
+          <button class="btn btn-main" id="ordDiscord" type="button">
+            <span class="icon-tile"><img class="brand-icon" src="assets/send.svg" alt=""></span>
+            Отправить заявку
+          </button>
+          <a class="btn btn-ghost" id="ordTg" href="https://t.me/alackashop_bot" target="_blank" rel="noopener">
+            <span class="icon-tile"><img class="tg-icon" src="assets/telegram.svg" alt=""></span>
+            Оформить через Telegram-бота
+          </a>
+        </div>
       </div>
 
       <div class="ob-col">
@@ -837,34 +861,20 @@ h2 { font-size: 36px; letter-spacing: -.025em; }
           <input id="ordContact" placeholder="например: @nickname" autocomplete="off">
         </div>
 
+        <div class="field">
+          <label for="ordPromo">Промокод (необязательно)</label>
+          <div class="promo-entry">
+            <input id="ordPromo" placeholder="например, ALACKA10" autocomplete="off" maxlength="32">
+            <button class="btn btn-ghost" id="ordPromoCheck" type="button">Проверить</button>
+          </div>
+          <p class="promo-hint" id="ordPromoStatus" role="status" aria-live="polite"></p>
+        </div>
+
         <!-- ловушка для ботов: человек этого поля не видит и не заполняет -->
         <input type="text" id="ordTrap" name="ordTrap" tabindex="-1" autocomplete="off"
                aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
 
-        <div class="cta">
-          <button class="btn btn-main" id="ordMail" type="button">
-            <span class="icon-tile"><img class="brand-icon" src="assets/gmail.svg" alt=""></span>
-            Отправить по почте
-          </button>
-          <button class="btn btn-ghost" id="ordDiscord" type="button">
-            <span class="icon-tile"><img class="brand-icon" src="assets/discord.svg" alt=""></span>
-            Отправить в Discord
-          </button>
-        </div>
-        <div class="cta" style="margin-top:10px">
-          <button class="btn btn-ghost" id="ordCopy" type="button">
-            <img class="action-icon" src="assets/copy.svg" alt="">
-            Скопировать текст
-          </button>
-          <a class="btn btn-ghost" id="ordTg" href="https://t.me/alackashop_bot" target="_blank" rel="noopener">
-            <span class="icon-tile"><img class="tg-icon" src="assets/telegram.svg" alt=""></span>
-            Оформить через Telegram-бота
-          </a>
-        </div>
-
-        <p class="ob-hint" id="ordStatus">
-          Заполни форму и отправь сообщение удобным способом.
-        </p>
+        <p class="ob-hint" id="ordStatus"></p>
       </div>
     </div>
 
@@ -1033,8 +1043,8 @@ h2 { font-size: 36px; letter-spacing: -.025em; }
     .catch(function () { /* файла нет или нет сети — оставляем статус по умолчанию */ });
 
   /* ── форма заказа ── */
-  var ORDER_MAIL = 'alackaord.off@gmail.com';
   var DISCORD_ORDER_ENDPOINT = 'https://alacka-orders.yaroslavkuzn27.workers.dev/';
+  var PROMO_VALIDATE_ENDPOINT = DISCORD_ORDER_ENDPOINT + 'promos/validate';
   var SERVICE_NAME = {
     'build':  'постройка или локация',
     'gui':    'GUI и интерфейс',
@@ -1048,8 +1058,12 @@ h2 { font-size: 36px; letter-spacing: -.025em; }
   var ordDeadline = document.getElementById('ordDeadline');
   var ordBudget = document.getElementById('ordBudget');
   var ordContact = document.getElementById('ordContact');
+  var ordPromo = document.getElementById('ordPromo');
+  var ordPromoStatus = document.getElementById('ordPromoStatus');
   var ordTrap = document.getElementById('ordTrap');
   var ordStatus = document.getElementById('ordStatus');
+  var validPromo = null;
+  var promoCheckSequence = 0;
 
   function setStatus(text, kind) {
     ordStatus.textContent = text;
@@ -1069,7 +1083,7 @@ h2 { font-size: 36px; letter-spacing: -.025em; }
     });
   });
 
-  function collect() {
+  function collect(includePromo) {
     var what = (ordWhat.value || '').trim();
     var names = picked.map(function (k) { return SERVICE_NAME[k] || k; });
     var lines = ['Привет! Хочу заказать работу для Roblox.'];
@@ -1079,6 +1093,10 @@ h2 { font-size: 36px; letter-spacing: -.025em; }
     if (ordBudget.value) lines.push('Бюджет: ' + Number(ordBudget.value).toLocaleString('ru-RU') + ' ₽.');
     var contact = (ordContact.value || '').trim();
     if (contact) lines.push('Связаться со мной: ' + contact);
+    if (includePromo !== false && validPromo) {
+      lines.push('Промокод: ' + validPromo.code + ' — скидка ' + validPromo.discount +
+        '% к согласованной цене (проверить при расчёте).');
+    }
     lines.push('');
     lines.push('Подскажи, пожалуйста, стоимость и сроки.');
     return lines.join('\n');
@@ -1106,6 +1124,79 @@ h2 { font-size: 36px; letter-spacing: -.025em; }
     return pickedKeys.length === 1 ? pickedKeys[0] : 'other';
   }
 
+  function checkPromo() {
+    var sequence = ++promoCheckSequence;
+    var code = ordPromo.value.trim().toUpperCase();
+    var service = routeFor(picked);
+    validPromo = null;
+    if (!code) {
+      ordPromoStatus.textContent = '';
+      ordPromoStatus.className = 'promo-hint';
+      renderOrder();
+      return Promise.resolve(true);
+    }
+    ordPromo.value = code;
+    ordPromoStatus.textContent = 'Проверяю промокод…';
+    ordPromoStatus.className = 'promo-hint';
+    return fetch(PROMO_VALIDATE_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        code: code,
+        service: service
+      })
+    }).then(function (response) {
+      return response.json().catch(function () { return null; }).then(function (data) {
+        if (sequence !== promoCheckSequence || ordPromo.value.trim().toUpperCase() !== code ||
+            routeFor(picked) !== service) return false;
+        if (!response.ok || !data) {
+          throw new Error(response.status === 503
+            ? 'Проверка промокодов временно недоступна. Попробуй позже.'
+            : 'Не удалось проверить промокод.');
+        }
+        if (!data.valid) {
+          ordPromoStatus.textContent = data.error || 'Промокод не найден или уже не действует.';
+          ordPromoStatus.className = 'promo-hint bad';
+          renderOrder();
+          return false;
+        }
+        validPromo = { code: data.code, discount: data.discount };
+        ordPromoStatus.textContent = 'Промокод применён: скидка ' + data.discount +
+          '% к согласованной цене.';
+        ordPromoStatus.className = 'promo-hint good';
+        renderOrder();
+        return true;
+      });
+    }).catch(function (error) {
+      if (sequence !== promoCheckSequence) return false;
+      ordPromoStatus.textContent = error instanceof TypeError
+        ? 'Не удалось связаться с Worker. Открой опубликованный сайт или локальный preview.'
+        : (error.message || 'Не удалось проверить промокод.');
+      ordPromoStatus.className = 'promo-hint bad';
+      renderOrder();
+      return false;
+    });
+  }
+
+  ordPromo.addEventListener('input', function () {
+    promoCheckSequence++;
+    validPromo = null;
+    ordPromoStatus.textContent = '';
+    ordPromoStatus.className = 'promo-hint';
+    renderOrder();
+  });
+  document.getElementById('ordPromoCheck').addEventListener('click', checkPromo);
+  chips.forEach(function (chip) {
+    chip.addEventListener('click', function () {
+      promoCheckSequence++;
+      if (!validPromo && !ordPromo.value.trim()) return;
+      validPromo = null;
+      ordPromoStatus.textContent = 'Услуга изменена — проверь промокод ещё раз.';
+      ordPromoStatus.className = 'promo-hint';
+      renderOrder();
+    });
+  });
+
   function webhookSecretName(service) {
     return {
       build: 'DISCORD_WEBHOOK_BUILD',
@@ -1115,18 +1206,6 @@ h2 { font-size: 36px; letter-spacing: -.025em; }
     }[service] || 'DISCORD_WEBHOOK_OTHER';
   }
 
-  /* ── 1. отправка по почте ── */
-  document.getElementById('ordMail').addEventListener('click', function () {
-    if (!ready()) return;
-    var names = picked.map(function (k) { return SERVICE_NAME[k] || k; });
-    var subject = 'Заявка с сайта: ' + (names.join(', ') || 'Roblox');
-    var link = 'mailto:' + ORDER_MAIL +
-      '?subject=' + encodeURIComponent(subject) +
-      '&body=' + encodeURIComponent(collect());
-    setStatus('Открыл почтовое приложение. Отправь письмо — и я отвечу.', 'good');
-    window.location.href = link;
-  });
-
   document.getElementById('ordDiscord').addEventListener('click', function () {
     if (!ready()) return;
     if (!DISCORD_ORDER_ENDPOINT) {
@@ -1135,28 +1214,43 @@ h2 { font-size: 36px; letter-spacing: -.025em; }
     }
 
     var button = this;
-    button.disabled = true;
-    setStatus('Отправляю заявку в Discord…');
     var service = routeFor(picked);
-    fetch(DISCORD_ORDER_ENDPOINT, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ service: service, content: collect() })
+    button.disabled = true;
+    checkPromo().then(function (valid) {
+      if (!valid) return null;
+      setStatus('Отправляю заявку в Discord…');
+      return fetch(DISCORD_ORDER_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          service: service,
+          content: collect(false),
+          promoCode: validPromo ? validPromo.code : ''
+        })
+      });
     }).then(function (response) {
+      if (!response) return null;
       return response.json().catch(function () { return null; }).then(function (data) {
         if (!response.ok) {
           var error = new Error(data && typeof data.error === 'string' ? data.error : 'Ошибка HTTP ' + response.status);
           error.status = response.status;
+          error.code = data && data.code;
+          error.detail = data && data.error;
           throw error;
         }
         if (!data || data.ok !== true) throw new Error('Worker вернул неожиданный ответ.');
         return data;
       });
     }).then(function () {
+      if (!validPromo && ordPromo.value.trim()) return;
       setStatus('Заявка отправлена. Скоро отвечу.', 'good');
     }).catch(function (error) {
       console.error('Не удалось отправить заявку в Discord:', error);
-      if (error.status === 503) {
+      if (error.code === 'invalid_promo') {
+        validPromo = null;
+        ordPromoStatus.textContent = error.detail || 'Промокод уже недействителен. Проверь код и попробуй снова.';
+        ordPromoStatus.className = 'promo-hint bad';
+      } else if (error.status === 503) {
         setStatus('В Cloudflare Worker не настроен Secret ' + webhookSecretName(service) +
           '. Добавь его в настройках Worker и попробуй снова.', 'bad');
       } else if (error.status === 502) {
@@ -1168,7 +1262,7 @@ h2 { font-size: 36px; letter-spacing: -.025em; }
         setStatus('Не удалось связаться с Worker. Проверь его адрес и настройки доступа.', 'bad');
       } else {
         setStatus('Не удалось отправить заявку' + (error.status ? ' (HTTP ' + error.status + ')' : '') +
-          '. Попробуй почту или Telegram.', 'bad');
+          '. Попробуй ещё раз или оформи через Telegram.', 'bad');
       }
     }).then(function () {
       button.disabled = false;
@@ -1178,17 +1272,6 @@ h2 { font-size: 36px; letter-spacing: -.025em; }
   ordWhat.addEventListener('input', renderOrder);
   ordDeadline.addEventListener('change', renderOrder);
   ordBudget.addEventListener('input', renderOrder);
-
-  /* ── 3. запасные варианты ── */
-  document.getElementById('ordCopy').addEventListener('click', function () {
-    var text = prev.textContent;
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(text).then(
-        function () { showToast('текст скопирован'); },
-        function () { showToast('выдели текст и скопируй вручную'); }
-      );
-    } else { showToast('выдели текст и скопируй вручную'); }
-  });
 
   /* ── увеличение скриншотов работ ──
      Клик по карточке открывает картинку целиком: заказчику важно разглядеть детали. */
