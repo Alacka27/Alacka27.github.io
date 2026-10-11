@@ -880,11 +880,11 @@ h2 { font-size: 36px; letter-spacing: -.025em; }
 
     <!-- показывается, только когда приём заказов закрыт -->
     <div class="notice closed" id="orderClosed" style="display:none">
-      <b>Пока не беру новые заказы.</b> Можно оставить заявку в Telegram-боте — отвечу, когда смогу.
+      <b>Пока не беру новые заказы.</b> Можно задать вопрос в Telegram-боте.
       <div style="margin-top:12px">
         <a class="btn btn-main" href="https://t.me/alackashop_bot" target="_blank" rel="noopener">
           <span class="icon-tile"><img class="tg-icon" src="assets/telegram.svg" alt=""></span>
-          Оформить через бота
+          Открыть Telegram-бота
         </a>
       </div>
     </div>
@@ -1026,7 +1026,7 @@ h2 { font-size: 36px; letter-spacing: -.025em; }
         notice.hidden = false;
         notice.className = 'notice closed';
         notice.innerHTML = '<b>Новые заказы пока не принимаю.</b> ' +
-          (note || 'Оставь заявку в Telegram-боте — отвечу, когда снова буду свободен.');
+          (note || 'Можно задать вопрос в Telegram-боте, но новые заявки временно закрыты.');
       } else {
         notice.hidden = true;
       }
