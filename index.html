@@ -1065,6 +1065,20 @@ h2 { font-size: 36px; letter-spacing: -.025em; }
   var validPromo = null;
   var promoCheckSequence = 0;
 
+  function promoBudgetText(promo, rawBudget) {
+    var amount = rawBudget === '' ? null : Number(rawBudget);
+    if (amount === null || !Number.isSafeInteger(amount) || amount < 0 || amount > 999999999) {
+      return 'Промокод: ' + promo.code + ' — скидка ' + promo.discount +
+        '%. Укажи целый бюджет, чтобы увидеть сумму скидки.';
+    }
+    var discountAmount = Math.round(amount * promo.discount / 100);
+    var discounted = amount - discountAmount;
+    return 'Промокод: ' + promo.code + ' — скидка ' + promo.discount +
+      '% от бюджета ' + amount.toLocaleString('ru-RU') + ' ₽: −' +
+      discountAmount.toLocaleString('ru-RU') + ' ₽; после скидки — ' +
+      discounted.toLocaleString('ru-RU') + ' ₽.';
+  }
+
   function setStatus(text, kind) {
     ordStatus.textContent = text;
     ordStatus.style.color = kind === 'bad' ? '#ff6b81'
@@ -1093,10 +1107,7 @@ h2 { font-size: 36px; letter-spacing: -.025em; }
     if (ordBudget.value) lines.push('Бюджет: ' + Number(ordBudget.value).toLocaleString('ru-RU') + ' ₽.');
     var contact = (ordContact.value || '').trim();
     if (contact) lines.push('Связаться со мной: ' + contact);
-    if (includePromo !== false && validPromo) {
-      lines.push('Промокод: ' + validPromo.code + ' — скидка ' + validPromo.discount +
-        '% к согласованной цене (проверить при расчёте).');
-    }
+    if (includePromo !== false && validPromo) lines.push(promoBudgetText(validPromo, ordBudget.value));
     lines.push('');
     lines.push('Подскажи, пожалуйста, стоимость и сроки.');
     return lines.join('\n');
@@ -1115,6 +1126,12 @@ h2 { font-size: 36px; letter-spacing: -.025em; }
     if (ordTrap.value) return false;                       // сработала ловушка для ботов
     if (!picked.length && !(ordWhat.value || '').trim()) {
       setStatus('Выбери услугу или опиши задачу.', 'bad');
+      return false;
+    }
+    if (ordBudget.value &&
+        (!Number.isSafeInteger(Number(ordBudget.value)) || Number(ordBudget.value) < 0 ||
+         Number(ordBudget.value) > 999999999)) {
+      setStatus('Укажи бюджет целым числом от 0 до 999 999 999 ₽.', 'bad');
       return false;
     }
     return true;
@@ -1161,8 +1178,7 @@ h2 { font-size: 36px; letter-spacing: -.025em; }
           return false;
         }
         validPromo = { code: data.code, discount: data.discount };
-        ordPromoStatus.textContent = 'Промокод применён: скидка ' + data.discount +
-          '% к согласованной цене.';
+        ordPromoStatus.textContent = promoBudgetText(validPromo, ordBudget.value);
         ordPromoStatus.className = 'promo-hint good';
         renderOrder();
         return true;
@@ -1225,7 +1241,8 @@ h2 { font-size: 36px; letter-spacing: -.025em; }
         body: JSON.stringify({
           service: service,
           content: collect(false),
-          promoCode: validPromo ? validPromo.code : ''
+          promoCode: validPromo ? validPromo.code : '',
+          budget: ordBudget.value ? Number(ordBudget.value) : null
         })
       });
     }).then(function (response) {
@@ -1271,7 +1288,10 @@ h2 { font-size: 36px; letter-spacing: -.025em; }
 
   ordWhat.addEventListener('input', renderOrder);
   ordDeadline.addEventListener('change', renderOrder);
-  ordBudget.addEventListener('input', renderOrder);
+  ordBudget.addEventListener('input', function () {
+    if (validPromo) ordPromoStatus.textContent = promoBudgetText(validPromo, ordBudget.value);
+    renderOrder();
+  });
 
   /* ── увеличение скриншотов работ ──
      Клик по карточке открывает картинку целиком: заказчику важно разглядеть детали. */
